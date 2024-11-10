@@ -1,6 +1,4 @@
-import sys
 from lark import Lark, Transformer, Tree
-import lark
 import os
 import math
 
