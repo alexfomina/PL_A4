@@ -2,9 +2,7 @@ import sys
 from lark import Lark, Transformer, Tree
 import lark
 import os
-
-#print(f"Python version: {sys.version}")
-#print(f"Lark version: {lark.__version__}")
+import math
 
 #  run/execute/interpret source code
 def interpret(source_code):
@@ -33,6 +31,30 @@ class LambdaCalculusTransformer(Transformer):
 
     def NAME(self, token):
         return str(token)
+    
+    def plus(self, items):
+        return ('plus', items[0], items[1])
+    
+    def minus(self, items):
+        return ('minus', items[0], items[1])
+    
+    def times(self, items):
+        return ('times', items[0], items[1])
+    
+    def power(self, items):
+        return ('power', items[0], items[1])
+    
+    def neg(self, items):
+        return ('neg', items[0])
+    
+    def log(self, items):
+        return ('log', items[0], items[1])
+    
+    def parens(self, items):
+        return ('parens', items[0])
+    
+    def num(self, items):
+        return ('num', int(items[0]))
 
 # reduce AST to normal form
 def evaluate(tree):
@@ -48,6 +70,22 @@ def evaluate(tree):
         else:
             result = ('app', e1, tree[2])
             pass
+    if tree[0] == 'plus':
+        result = evaluate(tree[1]) + evaluate(tree[2])
+    elif tree[0] == 'minus':
+        result = evaluate(tree[1]) - evaluate(tree[2])
+    elif tree[0] == 'times':
+        result = evaluate(tree[1]) * evaluate(tree[2])
+    elif tree[0] == 'power':
+        result = evaluate(tree[1]) ** evaluate(tree[2])
+    elif tree[0] == 'neg':
+        result = -1 * evaluate(tree[1])
+    elif tree[0] == 'log':
+        result = int(math.log(evaluate(tree[1]), evaluate(tree[2])))
+    elif tree[0] == 'num':
+        result = tree[1]
+    elif tree[0] == 'parens':
+        result = evaluate(tree[1])
     else:
         result = tree
         pass
