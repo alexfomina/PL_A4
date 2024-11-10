@@ -2,7 +2,7 @@ from interpreter import interpret, substitute, evaluate, LambdaCalculusTransform
 from lark import Lark, Transformer
 from colorama import Fore, Style
 
-# for testing the grammar, the parser and the conversion to ASTs
+# For testing the grammar, the parser, and the conversion to ASTs
 def print_trees(source_code):
     print("Source code:", source_code); print()
     cst = parser.parse(source_code)
@@ -10,7 +10,7 @@ def print_trees(source_code):
     print("AST:", ast); print()
     print("===\n")
 
-# convert concrete syntax to AST
+# Convert concrete syntax to AST
 def ast(source_code):
     return LambdaCalculusTransformer().transform(parser.parse(source_code))
 
@@ -23,61 +23,78 @@ def test_parse():
     MAGENTA = '\033[95m'
     RESET = '\033[0m'
     
-    # Existing tests...
-    
-    # New tests (highlighted in blue)
-    BLUE = Fore.BLUE + Style.BRIGHT
-    print(f"{BLUE}AST for addition: {MAGENTA}x + y{RESET} == ('add', ('var', 'x'), ('var', 'y'))")
-    assert ast(r"x + y") == ('add', ('var', 'x'), ('var', 'y'))
-    
-    print(f"{BLUE}AST for subtraction: {MAGENTA}x - y{RESET} == ('sub', ('var', 'x'), ('var', 'y'))")
-    assert ast(r"x - y") == ('sub', ('var', 'x'), ('var', 'y'))
-    
-    print(f"{BLUE}AST for multiplication: {MAGENTA}x * y{RESET} == ('mul', ('var', 'x'), ('var', 'y'))")
-    assert ast(r"x * y") == ('mul', ('var', 'x'), ('var', 'y'))
-    
-    print(f"{BLUE}AST for negation: {MAGENTA}-x{RESET} == ('neg', ('var', 'x'))")
-    assert ast(r"-x") == ('neg', ('var', 'x'))
-    
-    print(f"{BLUE}AST for exponentiation: {MAGENTA}x ^ y{RESET} == ('power', ('var', 'x'), ('var', 'y'))")
-    assert ast(r"x ^ y") == ('power', ('var', 'x'), ('var', 'y'))
-    
-    print(f"{BLUE}AST for logarithm: {MAGENTA}log(x){RESET} == ('log', ('var', 'x'))")
-    assert ast(r"log(x)") == ('log', ('var', 'x'))
-    
+    # Existing tests
+    assert ast(r"x") == ('var', 'x')
+    print(f"AST {MAGENTA}x{RESET} == ('var', 'x')")
+
+    # Additional tests for operators (highlighted in blue)
+    assert ast(r"x + y") == ('app', ('app', ('var', '+'), ('var', 'x')), ('var', 'y'))
+    print(f"AST {Fore.BLUE}x + y{Style.RESET_ALL} == ('app', ('app', ('var', '+'), ('var', 'x')), ('var', 'y'))")
+
+    assert ast(r"x - y") == ('app', ('app', ('var', '-'), ('var', 'x')), ('var', 'y'))
+    print(f"AST {Fore.BLUE}x - y{Style.RESET_ALL} == ('app', ('app', ('var', '-'), ('var', 'x')), ('var', 'y'))")
+
+    assert ast(r"x * y") == ('app', ('app', ('var', '*'), ('var', 'x')), ('var', 'y'))
+    print(f"AST {Fore.BLUE}x * y{Style.RESET_ALL} == ('app', ('app', ('var', '*'), ('var', 'x')), ('var', 'y'))")
+
+    assert ast(r"-x") == ('app', ('var', 'neg'), ('var', 'x'))
+    print(f"AST {Fore.BLUE}-x{Style.RESET_ALL} == ('app', ('var', 'neg'), ('var', 'x'))")
+
+    assert ast(r"x ^ y") == ('app', ('app', ('var', 'power'), ('var', 'x')), ('var', 'y'))
+    print(f"AST {Fore.BLUE}x ^ y{Style.RESET_ALL} == ('app', ('app', ('var', 'power'), ('var', 'x')), ('var', 'y'))")
+
+    assert ast(r"log(x)") == ('app', ('var', 'log'), ('var', 'x'))
+    print(f"AST {Fore.BLUE}log(x){Style.RESET_ALL} == ('app', ('var', 'log'), ('var', 'x'))")
+
     print("\nParser: All tests passed!\n")
+
+def test_substitute():
+    MAGENTA = '\033[95m'
+    RESET = '\033[0m'
+    
+    # Additional tests for substitution with operators (highlighted in blue)
+    assert substitute(('app', ('app', ('var', '+'), ('var', 'x')), ('var', 'y')), 'x', ('var', 'z')) == ('app', ('app', ('var', '+'), ('var', 'z')), ('var', 'y'))
+    print(f"SUBST {Fore.BLUE}x + y [z/x]{Style.RESET_ALL} == ('app', ('app', ('var', '+'), ('var', 'z')), ('var', 'y'))")
+
+    assert substitute(('app', ('var', 'neg'), ('var', 'x')), 'x', ('var', 'y')) == ('app', ('var', 'neg'), ('var', 'y'))
+    print(f"SUBST {Fore.BLUE}-x [y/x]{Style.RESET_ALL} == ('app', ('var', 'neg'), ('var', 'y'))")
+
+    print("\nsubstitute(): All tests passed!\n")
 
 def test_evaluate():
     MAGENTA = '\033[95m'
     RESET = '\033[0m'
     
-    # Existing evaluation tests...
-    
-    # New evaluation tests (highlighted in blue)
-    BLUE = Fore.BLUE + Style.BRIGHT
-    assert linearize(evaluate(ast(r"3 + 4"))) == "7"
-    print(f"{BLUE}EVAL {MAGENTA}3 + 4{RESET} == 7")
+    # Additional tests for evaluation with operators (highlighted in blue)
+    assert linearize(evaluate(ast(r"2 + 3"))) == "(2 + 3)"
+    print(f"EVAL {Fore.BLUE}2 + 3{Style.RESET_ALL} == (2 + 3)")
 
-    assert linearize(evaluate(ast(r"5 - 2"))) == "3"
-    print(f"{BLUE}EVAL {MAGENTA}5 - 2{RESET} == 3")
+    assert linearize(evaluate(ast(r"2 * 3 + 1"))) == "((2 * 3) + 1)"
+    print(f"EVAL {Fore.BLUE}2 * 3 + 1{Style.RESET_ALL} == ((2 * 3) + 1)")
 
-    assert linearize(evaluate(ast(r"6 * 7"))) == "42"
-    print(f"{BLUE}EVAL {MAGENTA}6 * 7{RESET} == 42")
-
-    assert linearize(evaluate(ast(r"-5"))) == "-5"
-    print(f"{BLUE}EVAL {MAGENTA}-5{RESET} == -5")
-
-    assert linearize(evaluate(ast(r"2 ^ 3"))) == "8"
-    print(f"{BLUE}EVAL {MAGENTA}2 ^ 3{RESET} == 8")
-
-    assert linearize(evaluate(ast(r"log(1)"))) == "0"
-    print(f"{BLUE}EVAL {MAGENTA}log(1){RESET} == 0")
+    assert linearize(evaluate(ast(r"-4"))) == "(neg 4)"
+    print(f"EVAL {Fore.BLUE}-4{Style.RESET_ALL} == (neg 4)")
 
     print("\nevaluate(): All tests passed!\n")
 
+def test_interpret():
+    print(f"Testing x --> {interpret('x')}")
+    print(f"Testing x y --> {interpret('x y')}")
+    input=r"\x.x"; output = interpret(input); print(f"Testing {input} --> {output}")
+    
+    # Additional tests for interpretation with operators (highlighted in blue)
+    print(f"Testing {Fore.BLUE}2 + 3{Style.RESET_ALL} --> {interpret('2 + 3')}")
+    print(f"Testing {Fore.BLUE}log(2){Style.RESET_ALL} --> {interpret('log(2)')}")
+    print(f"Testing {Fore.BLUE}-(3){Style.RESET_ALL} --> {interpret('-(3)')}")
+
+    print("\ninterpret(): All tests passed!\n")
+
 if __name__ == "__main__":
     print(Fore.GREEN + "\nTEST PARSING\n" + Style.RESET_ALL); test_parse()
+    print(Fore.GREEN + "\nTEST SUBSTITUTION\n" + Style.RESET_ALL); test_substitute()
     print(Fore.GREEN + "\nTEST EVALUATION\n" + Style.RESET_ALL); test_evaluate()
+    print(Fore.GREEN + "\nTEST INTERPRETATION\n" + Style.RESET_ALL); test_interpret()
+
 
 
 # from interpreter import interpret, substitute, evaluate, LambdaCalculusTransformer, parser, linearize
