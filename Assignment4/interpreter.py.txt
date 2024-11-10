@@ -1,0 +1,12 @@
+TIMEOUT | interpreter | Input: \x.(\y.y)x | Expected: (\x.((\y.y) x)) | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.x) (1--2) | Expected: 3.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.x) (1---2) | Expected: -1.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.x + 1) 5 | Expected: 6.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.x * x) 3 | Expected: 9.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.\y.x + y) 3 4 | Expected: 7.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: 1-2*3-4 | Expected: -9.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.x * x) 2 * 3 | Expected: 12.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.x * x) (-2) * (-3) | Expected: -12.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: ((\x.x * x) (-2)) * (-3) | Expected: -12.0 | Output: TIMEOUT
+TIMEOUT | interpreter | Input: (\x.x) (---2) | Expected: -2.0 | Output: TIMEOUT
