@@ -2,7 +2,6 @@ from lark import Lark, Transformer, Tree
 import os
 import math
 
-#  run/execute/interpret source code
 def interpret(source_code):
     cst = parser.parse(source_code)
     ast = LambdaCalculusTransformer().transform(cst)
@@ -10,17 +9,15 @@ def interpret(source_code):
     result = linearize(result_ast)
     return result
 
-# convert concrete syntax to CST
 parser = Lark(open("grammar.lark").read(), parser='lalr')
 
-# convert CST to AST
 class LambdaCalculusTransformer(Transformer):
     def lam(self, args):
         name, body = args
         return ('lam', str(name), body)
 
     def app(self, args):
-        new_args = [(arg.data, arg.children[0]) if isinstance(arg, Tree) and arg.data == 'int' else arg for arg in args]
+        new_args = [(arg.data, arg.children[0]) if isinstance(arg, Tree) and arg.data == 'float' else arg for arg in args]
         return ('app', *new_args)
 
     def var(self, args):
@@ -52,78 +49,81 @@ class LambdaCalculusTransformer(Transformer):
         return ('parens', items[0])
     
     def num(self, items):
-        return ('num', int(items[0]))
+        return ('num', float(items[0]))
 
-# reduce AST to normal form
 def evaluate(tree):
+    if isinstance(tree, float):
+        return tree
+        
     if tree[0] == 'app':
         e1 = evaluate(tree[1])
-        if e1[0] == 'lam':
+        if isinstance(e1, tuple) and e1[0] == 'lam':
             body = e1[2]
             name = e1[1]
             arg = tree[2]
             rhs = substitute(body, name, arg)
-            result = evaluate(rhs)
-            pass
+            return evaluate(rhs)
         else:
-            result = ('app', e1, tree[2])
-            pass
-    if tree[0] == 'plus':
-        result = evaluate(tree[1]) + evaluate(tree[2])
+            return ('app', e1, evaluate(tree[2]))
+    elif tree[0] == 'plus':
+        return evaluate(tree[1]) + evaluate(tree[2])
     elif tree[0] == 'minus':
-        result = evaluate(tree[1]) - evaluate(tree[2])
+        return evaluate(tree[1]) - evaluate(tree[2])
     elif tree[0] == 'times':
-        result = evaluate(tree[1]) * evaluate(tree[2])
+        return evaluate(tree[1]) * evaluate(tree[2])
     elif tree[0] == 'power':
-        result = evaluate(tree[1]) ** evaluate(tree[2])
+        return evaluate(tree[1]) ** evaluate(tree[2])
     elif tree[0] == 'neg':
-        result = -1 * evaluate(tree[1])
+        return -1 * evaluate(tree[1])
     elif tree[0] == 'log':
-        result = int(math.log(evaluate(tree[1]), evaluate(tree[2])))
+        return float(math.log(evaluate(tree[1]), evaluate(tree[2])))
     elif tree[0] == 'num':
-        result = tree[1]
+        return tree[1]
     elif tree[0] == 'parens':
-        result = evaluate(tree[1])
+        return evaluate(tree[1])
     else:
-        result = tree
-        pass
-    return result
+        return tree
 
-# generate a fresh name 
-# needed eg for \y.x [y/x] --> \z.y where z is a fresh name)
 class NameGenerator:
     def __init__(self):
         self.counter = 0
 
     def generate(self):
         self.counter += 1
-        # user defined names start with lower case (see the grammar), thus 'Var' is fresh
         return 'Var' + str(self.counter)
 
 name_generator = NameGenerator()
 
-# for beta reduction (capture-avoiding substitution)
-# 'replacement' for 'name' in 'tree'
 def substitute(tree, name, replacement):
-    # tree [replacement/name] = tree with all instances of 'name' replaced by 'replacement'
+    if isinstance(tree, float):
+        return tree
+        
     if tree[0] == 'var':
         if tree[1] == name:
-            return replacement # n [r/n] --> r
+            return replacement
         else:
-            return tree # x [r/n] --> x
+            return tree
     elif tree[0] == 'lam':
         if tree[1] == name:
-            return tree # \n.e [r/n] --> \n.e
+            return tree
         else:
             fresh_name = name_generator.generate()
             return ('lam', fresh_name, substitute(substitute(tree[2], tree[1], ('var', fresh_name)), name, replacement))
-            # \x.e [r/n] --> (\fresh.(e[fresh/x])) [r/n]
     elif tree[0] == 'app':
         return ('app', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
+    elif tree[0] in ['plus', 'minus', 'times', 'power', 'log']:
+        return (tree[0], substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
+    elif tree[0] == 'neg':
+        return ('neg', substitute(tree[1], name, replacement))
+    elif tree[0] == 'parens':
+        return ('parens', substitute(tree[1], name, replacement))
     else:
-        raise Exception('Unknown tree', tree)
+        return tree
 
 def linearize(ast):
+    if isinstance(ast, float):
+        return str(ast)
+        
     if ast[0] == 'var':
         return ast[1]
     elif ast[0] == 'lam':
@@ -141,28 +141,25 @@ def linearize(ast):
     elif ast[0] == 'neg':
         return "(-" + linearize(ast[1]) + ")"
     elif ast[0] == 'log':
-        return "(log(" + linearize(ast[1]) + ", " + linearize(ast[2]) + ")"
+        return "(log(" + linearize(ast[1]) + ", " + linearize(ast[2]) + "))"
     elif ast[0] == 'parens':
         return linearize(ast[1])
     elif ast[0] == 'num':
         return str(ast[1])
     else:
-        return ast
+        return str(ast)
 
 def main():
     import sys
     if len(sys.argv) != 2:
-        #print("Usage: python interpreter.py <filename or expression>", file=sys.stderr)
         sys.exit(1)
 
     input_arg = sys.argv[1]
 
     if os.path.isfile(input_arg):
-        # If the input is a valid file path, read from the file
         with open(input_arg, 'r') as file:
             expression = file.read()
     else:
-        # Otherwise, treat the input as a direct expression
         expression = input_arg
 
     result = interpret(expression)
