@@ -1,12 +1,133 @@
-TIMEOUT | interpreter | Input: \x.(\y.y)x | Expected: (\x.((\y.y) x)) | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.x) (1--2) | Expected: 3.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.x) (1---2) | Expected: -1.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.x + 1) 5 | Expected: 6.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.x * x) 3 | Expected: 9.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.\y.x + y) 3 4 | Expected: 7.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: 1-2*3-4 | Expected: -9.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.x * x) 2 * 3 | Expected: 12.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.x * x) (-2) * (-3) | Expected: -12.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: ((\x.x * x) (-2)) * (-3) | Expected: -12.0 | Output: TIMEOUT
-TIMEOUT | interpreter | Input: (\x.x) (---2) | Expected: -2.0 | Output: TIMEOUT
+True | interpreter | Input: \x.(\y.y)x | Expected: (\x.((\y.y) x)) | Output: (\x.((\y.y) x)) 
+False | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: ((\x.(a x)) ((\x.x) b))
+False | interpreter | Input: (\x.x) (1--2) | Expected: 3.0 | Output: ((\x.x) (1 - (-2)))
+False | interpreter | Input: (\x.x) (1---2) | Expected: -1.0 | Output: ((\x.x) (1 - (-(-2))))
+False | interpreter | Input: (\x.x + 1) 5 | Expected: 6.0 | Output: 
+Error: Traceback (most recent call last):
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 172, in <module>
+    main()
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 168, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 9, in interpret
+    result_ast = evaluate(ast)
+                 ^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 65, in evaluate
+    rhs = substitute(body, name, arg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 124, in substitute
+    raise Exception('Unknown tree', tree)
+Exception: ('Unknown tree', ('plus', ('var', 'x'), ('num', 1)))
+False | interpreter | Input: (\x.x * x) 3 | Expected: 9.0 | Output: 
+Error: Traceback (most recent call last):
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 172, in <module>
+    main()
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 168, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 9, in interpret
+    result_ast = evaluate(ast)
+                 ^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 65, in evaluate
+    rhs = substitute(body, name, arg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 124, in substitute
+    raise Exception('Unknown tree', tree)
+Exception: ('Unknown tree', ('times', ('var', 'x'), ('var', 'x')))
+False | interpreter | Input: (\x.\y.x + y) 3 4 | Expected: 7.0 | Output: 
+Error: Traceback (most recent call last):
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 172, in <module>
+    main()
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 168, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 9, in interpret
+    result_ast = evaluate(ast)
+                 ^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 60, in evaluate
+    e1 = evaluate(tree[1])
+         ^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 65, in evaluate
+    rhs = substitute(body, name, arg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 119, in substitute
+    return ('lam', fresh_name, substitute(substitute(tree[2], tree[1], ('var', fresh_name)), name, replacement))
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 124, in substitute
+    raise Exception('Unknown tree', tree)
+Exception: ('Unknown tree', ('plus', ('var', 'x'), ('var', 'y')))
+False | interpreter | Input: 1-2*3-4 | Expected: -9.0 | Output: 
+Error: Traceback (most recent call last):
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 172, in <module>
+    main()
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 168, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 10, in interpret
+    result = linearize(result_ast)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 127, in linearize
+    if ast[0] == 'var':
+       ~~~^^^
+TypeError: 'int' object is not subscriptable
+False | interpreter | Input: (\x.x * x) 2 * 3 | Expected: 12.0 | Output: 
+Error: Traceback (most recent call last):
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 172, in <module>
+    main()
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 168, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 9, in interpret
+    result_ast = evaluate(ast)
+                 ^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 76, in evaluate
+    result = evaluate(tree[1]) * evaluate(tree[2])
+             ^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 65, in evaluate
+    rhs = substitute(body, name, arg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 124, in substitute
+    raise Exception('Unknown tree', tree)
+Exception: ('Unknown tree', ('times', ('var', 'x'), ('var', 'x')))
+False | interpreter | Input: (\x.x * x) (-2) * (-3) | Expected: -12.0 | Output: 
+Error: Traceback (most recent call last):
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 172, in <module>
+    main()
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 168, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 9, in interpret
+    result_ast = evaluate(ast)
+                 ^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 76, in evaluate
+    result = evaluate(tree[1]) * evaluate(tree[2])
+             ^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 65, in evaluate
+    rhs = substitute(body, name, arg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 124, in substitute
+    raise Exception('Unknown tree', tree)
+Exception: ('Unknown tree', ('times', ('var', 'x'), ('var', 'x')))
+False | interpreter | Input: ((\x.x * x) (-2)) * (-3) | Expected: -12.0 | Output: 
+Error: Traceback (most recent call last):
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 172, in <module>
+    main()
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 168, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 9, in interpret
+    result_ast = evaluate(ast)
+                 ^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 76, in evaluate
+    result = evaluate(tree[1]) * evaluate(tree[2])
+             ^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 86, in evaluate
+    result = evaluate(tree[1])
+             ^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 65, in evaluate
+    rhs = substitute(body, name, arg)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\magik\OneDrive\Documents\Chapman\CPSC354\PL_A4\Assignment4\interpreter.py", line 124, in substitute
+    raise Exception('Unknown tree', tree)
+Exception: ('Unknown tree', ('times', ('var', 'x'), ('var', 'x')))
+False | interpreter | Input: (\x.x) (---2) | Expected: -2.0 | Output: ((\x.x) (-(-(-2))))

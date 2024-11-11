@@ -130,6 +130,22 @@ def linearize(ast):
         return "(" + "\\" + ast[1] + "." + linearize(ast[2]) + ")"
     elif ast[0] == 'app':
         return "(" + linearize(ast[1]) + " " + linearize(ast[2]) + ")"
+    elif ast[0] == 'plus':
+        return "(" + linearize(ast[1]) + " + " + linearize(ast[2]) + ")"
+    elif ast[0] == 'minus':
+        return "(" + linearize(ast[1]) + " - " + linearize(ast[2]) + ")"
+    elif ast[0] == 'times':
+        return "(" + linearize(ast[1]) + " * " + linearize(ast[2]) + ")"
+    elif ast[0] == 'power':
+        return "(" + linearize(ast[1]) + " ^ " + linearize(ast[2]) + ")"
+    elif ast[0] == 'neg':
+        return "(-" + linearize(ast[1]) + ")"
+    elif ast[0] == 'log':
+        return "(log(" + linearize(ast[1]) + ", " + linearize(ast[2]) + ")"
+    elif ast[0] == 'parens':
+        return linearize(ast[1])
+    elif ast[0] == 'num':
+        return str(ast[1])
     else:
         return ast
 

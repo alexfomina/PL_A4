@@ -1,27 +1,22 @@
 ?start: exp
 
-?exp: "\\" NAME "." exp                 -> lam
-     | exp "+" exp1                     -> plus
-     | exp "-" exp1                     -> minus
+
+?exp: exp "+" exp  -> plus
+     | exp "-" exp  -> minus
      | exp1
 
-?exp1: exp1 "*" exp2                    -> times
-     | "-" exp1                         -> neg
+?exp1: exp1 "*" exp2 -> times
+     | "-" exp1      -> neg
      | exp2
 
-?exp2: exp2 "^" exp3                    -> power
+?exp2: exp2 exp3     -> app
      | exp3
 
-?exp3: "log" exp "base" exp4            -> log
-     | exp4
+?exp3: "\\" NAME "." exp -> lam
+     | NAME              -> var
+     | NUMBER            -> num
+     | "(" exp ")"       -> parens
 
-?exp4: NAME                             -> var
-     | "(" exp ")"                      -> parens
-     | NUMBER                           -> num
-     | exp4 exp5                        -> app
-
-?exp5: "(" exp ")"                      -> parens
-     | NAME                             -> var
 
 
 NAME: /[a-z_][a-zA-Z0-9_]*/         

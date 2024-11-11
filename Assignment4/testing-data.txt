@@ -1,4 +1,4 @@
-interpreter, \x.(\y.y)x, (\x.((\y.y) x))
+interpreter, \x.(\y.y)x, (\x.((\y.y) x))                                                                                                                                                        
 interpreter, (\x.a x) ((\x.x)b), (a ((\x.x) b))
 interpreter, (\x.x) (1--2), 3.0
 interpreter, (\x.x) (1---2), -1.0
