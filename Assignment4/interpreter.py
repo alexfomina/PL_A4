@@ -57,6 +57,8 @@ def evaluate(tree):
         
     if tree[0] == 'app':
         e1 = evaluate(tree[1])
+        e2 = evaluate(tree[2])
+        
         if isinstance(e1, tuple) and e1[0] == 'lam':
             body = e1[2]
             name = e1[1]

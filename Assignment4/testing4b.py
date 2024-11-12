@@ -16,7 +16,7 @@ def load_tests(file_path):
 
 def run_test(program, input):
     try:
-        result = subprocess.run(['python', program, input], capture_output=True, text=True, timeout=TIMEOUT)
+        result = subprocess.run(['python3', program, input], capture_output=True, text=True, timeout=TIMEOUT)
         return result.stdout.strip(), result.stderr.strip()
     except subprocess.TimeoutExpired:
         return "TIMEOUT", ""

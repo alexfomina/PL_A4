@@ -3,6 +3,7 @@
 
 ?exp: exp "+" exp  -> plus
      | exp "-" exp  -> minus
+     | exp "^" exp  -> power
      | exp1
 
 ?exp1: exp1 "*" exp2 -> times
