@@ -56,7 +56,7 @@ def test_parse():
     print(f"AST {Fore.BLUE}log(x){Style.RESET_ALL} == ('app', ('var', 'log'), ('parens', ('var', 'x')))")
 
     
-    print("\nParser: All tests passed!\n")
+    # print("\nParser: All tests passed!\n")
 
 def test_substitute():
     MAGENTA = '\033[95m'
@@ -69,7 +69,24 @@ def test_substitute():
     assert substitute(('app', ('var', 'neg'), ('var', 'x')), 'x', ('var', 'y')) == ('app', ('var', 'neg'), ('var', 'y'))
     print(f"SUBST {Fore.BLUE}-x [y/x]{Style.RESET_ALL} == ('app', ('var', 'neg'), ('var', 'y'))")
 
-    print("\nsubstitute(): All tests passed!\n")
+    # print("\nsubstitute(): All tests passed!\n")
+
+# def test_evaluate():
+#     MAGENTA = '\033[95m'
+#     RESET = '\033[0m'
+    
+#     # Debug the operator evaluation
+#     result = linearize(evaluate(ast(r"2 + 3")))
+#     print(f"Debug - actual result: {result}")
+#     assert result == "5.0"  # Updated to match actual numerical evaluation
+#     print(f"EVAL {Fore.BLUE}2 + 3{Style.RESET_ALL} == 5.0")
+#     print("AST for '2 + 3':", ast(r"2 + 3"))
+
+
+#     # print("\nevaluate(): All tests passed!\n")
+
+
+
 
 def test_evaluate():
     MAGENTA = '\033[95m'
@@ -80,8 +97,12 @@ def test_evaluate():
     print(f"Debug - actual result: {result}")
     assert result == "5.0"  # Updated to match actual numerical evaluation
     print(f"EVAL {Fore.BLUE}2 + 3{Style.RESET_ALL} == 5.0")
-
+    print("AST for '2 + 3':", ast(r"2 + 3"))
+    
+    # Uncomment to indicate all tests passed
     print("\nevaluate(): All tests passed!\n")
+
+
 
     
 
@@ -95,7 +116,7 @@ def test_interpret():
     print(f"Testing {Fore.BLUE}log(2){Style.RESET_ALL} --> {interpret('log(2)')}")
     print(f"Testing {Fore.BLUE}-(3){Style.RESET_ALL} --> {interpret('-(3)')}")
 
-    print("\ninterpret(): All tests passed!\n")
+    # print("\ninterpret(): All tests passed!\n")
 
 if __name__ == "__main__":
     print(Fore.GREEN + "\nTEST PARSING\n" + Style.RESET_ALL); test_parse()

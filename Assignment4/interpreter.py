@@ -2,6 +2,8 @@ from lark import Lark, Transformer, Tree
 import os
 import math
 
+
+
 def interpret(source_code):
     cst = parser.parse(source_code)
     ast = LambdaCalculusTransformer().transform(cst)
@@ -50,41 +52,29 @@ class LambdaCalculusTransformer(Transformer):
     
     def num(self, items):
         return ('num', float(items[0]))
+    
+    def let(self, items):
+        name, value, body = items
+        return ('let', str(name), value, body)
+    
+    def letrect(self, items):
+        name, value, body = items
+        return ('letrect', str(name), value, body)
+    
+    def fix(self, items):
+        return ('fix', items[0])
+    
+    def if_expr(self, items):
+        cond, then_, else_ = items
+        return ('if', cond, then_, else_)
+    
+    def leq(self, items): 
+        return ('leq', items[0], items[1])
+    
+    def eq(self, items): 
+        return ('eq', items[0], items[1])
 
-def evaluate(tree):
-    if isinstance(tree, float):
-        return tree
-        
-    if tree[0] == 'app':
-        e1 = evaluate(tree[1])
-        e2 = evaluate(tree[2])
-        
-        if isinstance(e1, tuple) and e1[0] == 'lam':
-            body = e1[2]
-            name = e1[1]
-            arg = tree[2]
-            rhs = substitute(body, name, arg)
-            return evaluate(rhs)
-        else:
-            return ('app', e1, evaluate(tree[2]))
-    elif tree[0] == 'plus':
-        return evaluate(tree[1]) + evaluate(tree[2])
-    elif tree[0] == 'minus':
-        return evaluate(tree[1]) - evaluate(tree[2])
-    elif tree[0] == 'times':
-        return evaluate(tree[1]) * evaluate(tree[2])
-    elif tree[0] == 'power':
-        return evaluate(tree[1]) ** evaluate(tree[2])
-    elif tree[0] == 'neg':
-        return -1 * evaluate(tree[1])
-    elif tree[0] == 'log':
-        return float(math.log(evaluate(tree[1]), evaluate(tree[2])))
-    elif tree[0] == 'num':
-        return tree[1]
-    elif tree[0] == 'parens':
-        return evaluate(tree[1])
-    else:
-        return tree
+
 
 class NameGenerator:
     def __init__(self):
@@ -96,33 +86,143 @@ class NameGenerator:
 
 name_generator = NameGenerator()
 
-def substitute(tree, name, replacement):
+
+
+def evaluate(tree):
+    print(f"Evaluating: {linearize(tree)}")  # Log the tree in human-readable format
+    
     if isinstance(tree, float):
         return tree
+
+    if tree[0] == 'app':  # Application
+        print(" -> Application detected.")
+        func = evaluate(tree[1])
+        print(f" -> Evaluated function: {linearize(func)}")
+        arg = tree[2]  # Do not evaluate the argument yet
+        print(f" -> Unevaluated argument: {linearize(arg)}")
         
-    if tree[0] == 'var':
-        if tree[1] == name:
-            return replacement
+        if isinstance(func, tuple) and func[0] == 'lam':  # If function is a lambda
+            print(" -> Applying lambda.")
+            param = func[1]
+            body = func[2]
+            print(f" -> Substituting {param} with {linearize(arg)} in {linearize(body)}")
+            substituted = substitute(body, param, arg)  # Substitute without evaluating the argument
+            print(f" -> Result after substitution: {linearize(substituted)}")
+            return evaluate(substituted)  # Continue evaluating the resulting expression
         else:
-            return tree
-    elif tree[0] == 'lam':
-        if tree[1] == name:
-            return tree
+            print(f" -> Resulting application: {linearize(('app', func, arg))}")
+            return ('app', func, arg)  # Return partially reduced application
+
+    # Handle other cases as before
+    elif tree[0] == 'lam':  # Lambda
+        print(" -> Lambda expression.")
+        return tree  # Return the lambda as-is for now
+
+    elif tree[0] == 'parens':  # Parentheses
+        print(" -> Parenthesized expression.")
+        return evaluate(tree[1])
+    elif tree[0] == 'plus':  # Addition
+        print(" -> Addition.")
+        return evaluate(tree[1]) + evaluate(tree[2])
+    elif tree[0] == 'minus':  # Subtraction
+        print(" -> Subtraction.")
+        return evaluate(tree[1]) - evaluate(tree[2])
+    elif tree[0] == 'times':  # Multiplication
+        print(" -> Multiplication.")
+        return evaluate(tree[1]) * evaluate(tree[2])
+    elif tree[0] == 'power':  # Exponentiation
+        print(" -> Exponentiation.")
+        return evaluate(tree[1]) ** evaluate(tree[2])
+    elif tree[0] == 'neg':  # Negation
+        print(" -> Negation.")
+        return -evaluate(tree[1])
+    elif tree[0] == 'log':  # Logarithm
+        print(" -> Logarithm.")
+        return math.log(evaluate(tree[1]), evaluate(tree[2]))
+    elif tree[0] == 'num':  # Number
+        print(f" -> Number: {tree[1]}")
+        return tree[1]
+    elif tree[0] == 'var':  # Variable
+        print(f" -> Variable: {tree[1]}")
+        return tree
+    elif tree[0] == 'let':  # Let binding
+        print(" -> Let binding.")
+        value = evaluate(tree[2])
+        print(f" -> Evaluating value: {linearize(value)}")
+        body = substitute(tree[3], tree[1], value)
+        print(f" -> Substituted body: {linearize(body)}")
+        return evaluate(body)
+    elif tree[0] == 'letrect':  # Recursive let binding
+        print(" -> Recursive let binding.")
+        fresh_name = name_generator.generate()
+        print(f" -> Generated fresh name: {fresh_name}")
+        value = substitute(tree[2], tree[1], ('var', fresh_name))
+        print(f" -> Substituted value: {linearize(value)}")
+        body = substitute(tree[3], tree[1], ('var', fresh_name))
+        print(f" -> Substituted body: {linearize(body)}")
+        return evaluate(body)
+    elif tree[0] == 'fix':  # Fixed-point combinator
+        print(" -> Fixed-point combinator.")
+        return tree
+    elif tree[0] == 'if':  # Conditional expression
+        print(" -> Conditional expression.")
+        cond = evaluate(tree[1])
+        print(f" -> Evaluating condition: {linearize(cond)}")
+        if cond:
+            return evaluate(tree[2])
         else:
-            fresh_name = name_generator.generate()
-            return ('lam', fresh_name, substitute(substitute(tree[2], tree[1], ('var', fresh_name)), name, replacement))
-    elif tree[0] == 'app':
-        return ('app', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
-    elif tree[0] in ['plus', 'minus', 'times', 'power', 'log']:
-        return (tree[0], substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
-    elif tree[0] == 'neg':
-        return ('neg', substitute(tree[1], name, replacement))
-    elif tree[0] == 'parens':
-        return ('parens', substitute(tree[1], name, replacement))
+            return evaluate(tree[3])
+    elif tree[0] == 'leq':  # Less than or equal
+        print(" -> Less than or equal.")
+        return evaluate(tree[1]) <= evaluate(tree[2])
+    elif tree[0] == 'eq':  # Equality
+        print(" -> Equality.")
+        return evaluate(tree[1]) == evaluate(tree[2])
+    
+
     else:
+        print(f" -> Returning unprocessed tree: {linearize(tree)}")
         return tree
 
+    
+def substitute(tree, name, replacement):
+    print(f"Substituting: Replace {name} with {linearize(replacement)} in {linearize(tree)}")
+    
+    if isinstance(tree, float):
+        return tree
+
+    if isinstance(tree, tuple):
+        if tree[0] == 'var':
+            if tree[1] == name:
+                print(f" -> Variable matched: {name} replaced with {linearize(replacement)}")
+                return replacement
+            else:
+                return tree
+        elif tree[0] == 'lam':
+            if tree[1] == name:
+                print(f" -> Skipping substitution inside lambda for {name}.")
+                return tree
+            else:
+                fresh_name = name_generator.generate()
+                print(f" -> Renaming variable {tree[1]} to avoid capture: {fresh_name}")
+                renamed_body = substitute(tree[2], tree[1], ('var', fresh_name))
+                return ('lam', fresh_name, substitute(renamed_body, name, replacement))
+        elif tree[0] == 'app':
+            print(f" -> Substituting in application: {linearize(tree)}")
+            return ('app', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
+        # Handle other cases (arithmetic, control flow) as before, logging substitutions
+        elif tree[0] in {'+', '-', '*', '/'}:
+            left = substitute(tree[1], name, replacement)
+            right = substitute(tree[2], name, replacement)
+            return (tree[0], left, right)
+        
+    return tree
+
+
+
 def linearize(ast):
+    if ast is None:
+        return 'error: invalid ast'
     if isinstance(ast, float):
         return str(ast)
         
@@ -148,6 +248,19 @@ def linearize(ast):
         return linearize(ast[1])
     elif ast[0] == 'num':
         return str(ast[1])
+    elif ast[0] == 'let':
+        return "(let " + ast[1] + " = " + linearize(ast[2]) + " in " + linearize(ast[3]) + ")"
+    elif ast[0] == 'letrect':
+        return "(letrec " + ast[1] + " = " + linearize(ast[2]) + " in " + linearize(ast[3]) + ")"
+    elif ast[0] == 'fix':
+        return "(fix " + linearize(ast[1]) + ")"
+    elif ast[0] == 'if':
+        return "(if " + linearize(ast[1]) + " then " + linearize(ast[2]) + " else " + linearize(ast[3]) + ")"
+    elif ast[0] == 'leq':
+        return "(" + linearize(ast[1]) + " <= " + linearize(ast[2]) + ")"
+    elif ast[0] == 'eq':
+        return "(" + linearize(ast[1]) + " == " + linearize(ast[2]) + ")"
+    
     else:
         return str(ast)
 
