@@ -91,7 +91,7 @@ name_generator = NameGenerator()
 def evaluate(tree):
     print(f"Evaluating: {linearize(tree)}")  # Log the tree in human-readable format
     
-    if isinstance(tree, float):
+    if isinstance(tree, (float, int)):
         return tree
 
     if tree[0] == 'app':  # Application
@@ -160,7 +160,8 @@ def evaluate(tree):
         print(f" -> Substituted value: {linearize(value)}")
         body = substitute(tree[3], tree[1], ('var', fresh_name))
         print(f" -> Substituted body: {linearize(body)}")
-        return evaluate(body)
+        new_env = {fresh_name: evaluate(value)}
+        return evaluate(body, new_env)
     elif tree[0] == 'fix':  # Fixed-point combinator
         print(" -> Fixed-point combinator.")
         return tree
@@ -188,7 +189,7 @@ def evaluate(tree):
 def substitute(tree, name, replacement):
     print(f"Substituting: Replace {name} with {linearize(replacement)} in {linearize(tree)}")
     
-    if isinstance(tree, float):
+    if isinstance(tree, float or int):
         return tree
 
     if isinstance(tree, tuple):
@@ -260,9 +261,9 @@ def substitute(tree, name, replacement):
 def linearize(ast):
     if ast is None:
         return 'error: invalid ast'
-    if isinstance(ast, float):
+    if isinstance(ast, (float, int)):
         return str(ast)
-        
+
     if ast[0] == 'var':
         return ast[1]
     elif ast[0] == 'lam':
