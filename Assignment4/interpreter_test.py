@@ -55,6 +55,17 @@ def test_parse():
     assert ast(r"log(x)") == ('app', ('var', 'log'), ('parens', ('var', 'x')))
     print(f"AST {Fore.BLUE}log(x){Style.RESET_ALL} == ('app', ('var', 'log'), ('parens', ('var', 'x')))")
 
+    assert ast(r"let x = 5 in x") == ('let', 'x', ('num', 5.0), ('var', 'x'))
+    print(f"AST {Fore.BLUE}let x = 5 in x{Style.RESET_ALL} == ('let', 'x', ('num', 5.0), ('var', 'x'))")
+
+    assert ast(r"letrec f = \x.x in f") == ('letrec', 'f', ('lam', 'x', ('var', 'x')), ('var', 'f'))
+    print(f"AST {Fore.BLUE}letrec f = \\x.x in f{Style.RESET_ALL} == ('letrec', 'f', ('lam', 'x', ('var', 'x')), ('var', 'f'))")
+
+    assert ast(r"fix f") == ('fix', ('var', 'f'))
+    print(f"AST {Fore.BLUE}fix f{Style.RESET_ALL} == ('fix', ('var', 'f'))")
+
+    assert ast(r"if x then y else z") == ('if', ('var', 'x'), ('var', 'y'), ('var', 'z'))
+    print(f"AST {Fore.BLUE}if x then y else z{Style.RESET_ALL} == ('if', ('var', 'x'), ('var', 'y'), ('var', 'z'))")
     
     # print("\nParser: All tests passed!\n")
 
