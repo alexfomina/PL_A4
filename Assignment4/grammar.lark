@@ -4,6 +4,12 @@
 ?exp: exp "+" exp  -> plus
      | exp "-" exp  -> minus
      | exp "^" exp  -> power
+     | exp "<=" exp -> leq
+     | exp "==" exp -> eq
+     | "if" exp "then" exp "else" exp -> if
+     | "let" NAME "=" exp "in" exp -> let
+     | "letrec" NAME "=" exp "in" exp -> letrec
+     | "fix" exp -> fix
      | exp1
 
 ?exp1: exp1 "*" exp2 -> times

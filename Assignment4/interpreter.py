@@ -215,6 +215,43 @@ def substitute(tree, name, replacement):
             left = substitute(tree[1], name, replacement)
             right = substitute(tree[2], name, replacement)
             return (tree[0], left, right)
+        elif tree[0] == 'let':
+            if tree[1] == name:
+                print(f" -> Skipping substitution inside let for {name}.")
+                return tree
+            else:
+                fresh_name = name_generator.generate()
+                print(f" -> Renaming variable {tree[1]} to avoid capture: {fresh_name}")
+                renamed_value = substitute(tree[2], tree[1], ('var', fresh_name))
+                renamed_body = substitute(tree[3], tree[1], ('var', fresh_name))
+                return ('let', fresh_name, substitute(renamed_value, name, replacement), substitute(renamed_body, name, replacement))
+        elif tree[0] == 'letrec':
+            if tree[1] == name:
+                print(f" -> Skipping substitution inside letrec for {name}.")
+                return tree
+            else:
+                fresh_name = name_generator.generate()
+                print(f" -> Renaming variable {tree[1]} to avoid capture: {fresh_name}")
+                renamed_value = substitute(tree[2], tree[1], ('var', fresh_name))
+                renamed_body = substitute(tree[3], tree[1], ('var', fresh_name))
+                return ('letrec', fresh_name, substitute(renamed_value, name, replacement), substitute(renamed_body, name, replacement))
+        elif tree[0] == 'fix':
+            print(f" -> Substituting in fix: {linearize(tree)}")
+            return ('fix', substitute(tree[1], name, replacement))
+        elif tree[0] == 'if':
+            cond = substitute(tree[1], name, replacement)
+            then_ = substitute(tree[2], name, replacement)
+            else_ = substitute(tree[3], name, replacement)
+            return ('if', cond, then_, else_)
+        elif tree[0] == 'leq':
+            left = substitute(tree[1], name, replacement)
+            right = substitute(tree[2], name, replacement)
+            return ('leq', left, right)
+        elif tree[0] == 'eq':
+            left = substitute(tree[1], name, replacement)
+            right = substitute(tree[2], name, replacement)
+            return ('eq', left, right)
+        
         
     return tree
 
