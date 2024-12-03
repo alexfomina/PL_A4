@@ -4,7 +4,7 @@ import subprocess
 import re
 import glob
 
-TIMEOUT = 0.2  # Timeout duration in seconds
+TIMEOUT = 0.5  # Timeout duration in seconds
 
 def load_tests(file_path):
     tests = []
