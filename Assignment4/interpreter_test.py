@@ -67,7 +67,7 @@ def test_parse():
     assert ast(r"if x then y else z") == ('if', ('var', 'x'), ('var', 'y'), ('var', 'z'))
     print(f"AST {Fore.BLUE}if x then y else z{Style.RESET_ALL} == ('if', ('var', 'x'), ('var', 'y'), ('var', 'z'))")
     
-    # print("\nParser: All tests passed!\n")
+    print("\nParser: All tests passed!\n")
 
 def test_substitute():
     MAGENTA = '\033[95m'
@@ -80,42 +80,46 @@ def test_substitute():
     assert substitute(('app', ('var', 'neg'), ('var', 'x')), 'x', ('var', 'y')) == ('app', ('var', 'neg'), ('var', 'y'))
     print(f"SUBST {Fore.BLUE}-x [y/x]{Style.RESET_ALL} == ('app', ('var', 'neg'), ('var', 'y'))")
 
-    # print("\nsubstitute(): All tests passed!\n")
+    assert substitute(('let', 'x', ('num', 5), ('var', 'x')), 'x', ('num', 10)) == ('let', 'x', ('num', 5), ('var', 'x'))
+    print(f"SUBST {Fore.BLUE}let x = 5 in x [x/10]{Style.RESET_ALL} == ('let', 'x', ('num', 5), ('var', 'x'))")
 
-# def test_evaluate():
-#     MAGENTA = '\033[95m'
-#     RESET = '\033[0m'
+    assert substitute(('letrec', 'f', ('lam', 'x', ('var', 'x')), ('var', 'f')), 'f', ('num', 5)) == ('letrec', 'f', ('lam', 'x', ('var', 'x')), ('var', 'f'))
+    print(f"SUBST {Fore.BLUE}letrec f = \\x.x in f [f/5]{Style.RESET_ALL} == ('letrec', 'f', ('lam', 'x', ('var', 'x')), ('var', 'f'))")
+
+    assert substitute(('fix', ('var', 'f')), 'f', ('num', 5)) == ('fix', ('num', 5))
+    print(f"SUBST {Fore.BLUE}fix f [f/5]{Style.RESET_ALL} == ('fix', ('num', 5))")
+
+    assert substitute(('if', ('var', 'x'), ('var', 'y'), ('var', 'z')), 'x', ('num', 5)) == ('if', ('num', 5), ('var', 'y'), ('var', 'z'))
+    print(f"SUBST {Fore.BLUE}if x then y else z [x/5]{Style.RESET_ALL} == ('if', ('num', 5), ('var', 'y'), ('var', 'z'))")
     
-#     # Debug the operator evaluation
-#     result = linearize(evaluate(ast(r"2 + 3")))
-#     print(f"Debug - actual result: {result}")
-#     assert result == "5.0"  # Updated to match actual numerical evaluation
-#     print(f"EVAL {Fore.BLUE}2 + 3{Style.RESET_ALL} == 5.0")
-#     print("AST for '2 + 3':", ast(r"2 + 3"))
-
-
-#     # print("\nevaluate(): All tests passed!\n")
-
-
-
+    print("\nsubstitute(): All tests passed!\n")
 
 def test_evaluate():
     MAGENTA = '\033[95m'
     RESET = '\033[0m'
     
     # Debug the operator evaluation
-    result = linearize(evaluate(ast(r"2 + 3")))
-    print(f"Debug - actual result: {result}")
-    assert result == "5.0"  # Updated to match actual numerical evaluation
+    assert linearize(evaluate(ast(r"2 + 3"))) == "5.0"  # Updated to match actual numerical evaluation
     print(f"EVAL {Fore.BLUE}2 + 3{Style.RESET_ALL} == 5.0")
-    print("AST for '2 + 3':", ast(r"2 + 3"))
+
+    # Test evaluation of applications
+    assert evaluate(('app', ('lam', 'x', ('var', 'x')), ('num', 5))) == 5
+
+    # Test evaluation of let expressions
+    assert evaluate(('let', 'x', ('num', 5), ('var', 'x'))) == 5
+
+    # Test evaluation of letrec expressions
+    assert evaluate(('letrec', 'f', ('lam', 'x', ('var', 'x')), ('var', 'f'))) == ('lam', 'x', ('var', 'x'))
+
+    # Test evaluation of fix expressions
+    assert evaluate(('fix', ('lam', 'f', ('lam', 'x', ('app', ('var', 'f'), ('var', 'x')))))) == ('lam', 'x', ('app', ('fix', ('lam', 'f', ('lam', 'x', ('app', ('var', 'f'), ('var', 'x'))))), ('var', 'x')))
+
+    # Test evaluation of if expressions
+    assert evaluate(('if', ('num', 1), ('num', 2), ('num', 3))) == ('num', 2)
+    assert evaluate(('if', ('num', 0), ('num', 2), ('num', 3))) == ('num', 3)
     
     # Uncomment to indicate all tests passed
     print("\nevaluate(): All tests passed!\n")
-
-
-
-    
 
 def test_interpret():
     print(f"Testing x --> {interpret('x')}")

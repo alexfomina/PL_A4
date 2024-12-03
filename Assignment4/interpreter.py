@@ -57,9 +57,9 @@ class LambdaCalculusTransformer(Transformer):
         name, value, body = items
         return ('let', str(name), value, body)
     
-    def letrect(self, items):
+    def letrec(self, items):
         name, value, body = items
-        return ('letrect', str(name), value, body)
+        return ('letrec', str(name), value, body)
     
     def fix(self, items):
         return ('fix', items[0])
@@ -152,7 +152,7 @@ def evaluate(tree):
         body = substitute(tree[3], tree[1], value)
         print(f" -> Substituted body: {linearize(body)}")
         return evaluate(body)
-    elif tree[0] == 'letrect':  # Recursive let binding
+    elif tree[0] == 'letrec':  # Recursive let binding
         print(" -> Recursive let binding.")
         fresh_name = name_generator.generate()
         print(f" -> Generated fresh name: {fresh_name}")
@@ -287,7 +287,7 @@ def linearize(ast):
         return str(ast[1])
     elif ast[0] == 'let':
         return "(let " + ast[1] + " = " + linearize(ast[2]) + " in " + linearize(ast[3]) + ")"
-    elif ast[0] == 'letrect':
+    elif ast[0] == 'letrec':
         return "(letrec " + ast[1] + " = " + linearize(ast[2]) + " in " + linearize(ast[3]) + ")"
     elif ast[0] == 'fix':
         return "(fix " + linearize(ast[1]) + ")"
