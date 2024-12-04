@@ -1,136 +1,28 @@
-False | interpreter | Input: \x.(\y.y)x | Expected: (\x.((\y.y) x)) | Output: Evaluating: (\x.((\y.y) x))
- -> Lambda expression.
-(\x.((\y.y) x))
-False | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: Evaluating: ((\x.(a x)) ((\x.x) b))
- -> Application detected.
-Evaluating: (\x.(a x))
- -> Parenthesized expression.
-Evaluating: (\x.(a x))
- -> Lambda expression.
- -> Evaluated function: (\x.(a x))
-Evaluating: ((\x.x) b)
- -> Parenthesized expression.
-Evaluating: ((\x.x) b)
- -> Application detected.
-Evaluating: (\x.x)
- -> Parenthesized expression.
-Evaluating: (\x.x)
- -> Lambda expression.
- -> Evaluated function: (\x.x)
-Evaluating: b
- -> Variable: b
- -> Evaluated argument: b
- -> Applying lambda.
- -> Substituting x with b in x
-Substituting: Replace x with b in x
- -> Variable matched: x replaced with b
- -> Result after substitution: b
-Evaluating: b
- -> Variable: b
- -> Evaluated argument: b
- -> Applying lambda.
- -> Substituting x with b in (a x)
-Substituting: Replace x with b in (a x)
- -> Substituting in application: (a x)
-Substituting: Replace x with b in a
-Substituting: Replace x with b in x
- -> Variable matched: x replaced with b
- -> Result after substitution: (a b)
-Evaluating: (a b)
- -> Application detected.
-Evaluating: a
- -> Variable: a
- -> Evaluated function: a
-Evaluating: b
- -> Variable: b
- -> Evaluated argument: b
- -> Resulting application: (a b)
-(a b)
-False | interpreter | Input: (\x.x) (1--2) | Expected: 3.0 | Output: Evaluating: ((\x.x) (1.0 - (-2.0)))
- -> Application detected.
-Evaluating: (\x.x)
- -> Parenthesized expression.
-Evaluating: (\x.x)
- -> Lambda expression.
- -> Evaluated function: (\x.x)
-Evaluating: (1.0 - (-2.0))
- -> Parenthesized expression.
-Evaluating: (1.0 - (-2.0))
- -> Subtraction.
-Evaluating: 1.0
- -> Number: 1.0
-Evaluating: (-2.0)
- -> Negation.
-Evaluating: 2.0
- -> Number: 2.0
- -> Evaluated argument: 3.0
- -> Applying lambda.
- -> Substituting x with 3.0 in x
-Substituting: Replace x with 3.0 in x
- -> Variable matched: x replaced with 3.0
- -> Result after substitution: 3.0
-Evaluating: 3.0
-3.0
-False | interpreter | Input: (\x.x) (1---2) | Expected: -1.0 | Output: Evaluating: ((\x.x) (1.0 - (-(-2.0))))
- -> Application detected.
-Evaluating: (\x.x)
- -> Parenthesized expression.
-Evaluating: (\x.x)
- -> Lambda expression.
- -> Evaluated function: (\x.x)
-Evaluating: (1.0 - (-(-2.0)))
- -> Parenthesized expression.
-Evaluating: (1.0 - (-(-2.0)))
- -> Subtraction.
-Evaluating: 1.0
- -> Number: 1.0
-Evaluating: (-(-2.0))
- -> Negation.
-Evaluating: (-2.0)
- -> Negation.
-Evaluating: 2.0
- -> Number: 2.0
- -> Evaluated argument: -1.0
- -> Applying lambda.
- -> Substituting x with -1.0 in x
-Substituting: Replace x with -1.0 in x
- -> Variable matched: x replaced with -1.0
- -> Result after substitution: -1.0
-Evaluating: -1.0
--1.0
-False | interpreter | Input: (\x.x + 1) 5 | Expected: 6.0 | Output: Evaluating: ((\x.(x + 1.0)) 5.0)
- -> Application detected.
-Evaluating: (\x.(x + 1.0))
- -> Parenthesized expression.
-Evaluating: (\x.(x + 1.0))
- -> Lambda expression.
- -> Evaluated function: (\x.(x + 1.0))
-Evaluating: 5.0
- -> Number: 5.0
- -> Evaluated argument: 5.0
- -> Applying lambda.
- -> Substituting x with 5.0 in (x + 1.0)
-Substituting: Replace x with 5.0 in (x + 1.0)
- -> Result after substitution: (x + 1.0)
-Evaluating: (x + 1.0)
- -> Addition.
-Evaluating: x
- -> Variable: x
-Evaluating: 1.0
- -> Number: 1.0
-Error: Traceback (most recent call last):
-  File "/Users/rorysullivan/Desktop/PL_A4/Assignment4/interpreter.py", line 389, in <module>
-    main()
-  File "/Users/rorysullivan/Desktop/PL_A4/Assignment4/interpreter.py", line 385, in main
-    result = interpret(expression)
-             ^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/rorysullivan/Desktop/PL_A4/Assignment4/interpreter.py", line 10, in interpret
-    result_ast = evaluate(ast)
-                 ^^^^^^^^^^^^^
-  File "/Users/rorysullivan/Desktop/PL_A4/Assignment4/interpreter.py", line 207, in evaluate
-    return evaluate(substituted)  # Continue evaluating the resulting expression
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/rorysullivan/Desktop/PL_A4/Assignment4/interpreter.py", line 222, in evaluate
-    return evaluate(tree[1]) + evaluate(tree[2])
-           ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
-TypeError: can only concatenate tuple (not "float") to tuple
+True | interpreter | Input: \x.(\y.y)x | Expected: (\x.((\y.y) x)) | Output: (\x.((\y.y) x))
+True | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: (a ((\x.x) b))
+True | interpreter | Input: (\x.x) (1--2) | Expected: 3.0 | Output: 3.0
+True | interpreter | Input: (\x.x) (1---2) | Expected: -1.0 | Output: -1.0
+True | interpreter | Input: (\x.x + 1) 5 | Expected: 6.0 | Output: 6.0
+True | interpreter | Input: (\x.x * x) 3 | Expected: 9.0 | Output: 9.0
+True | interpreter | Input: (\x.\y.x + y) 3 4 | Expected: 7.0 | Output: 7.0
+False | interpreter | Input: 1-2*3-4 | Expected: -9.0 | Output: -1.0
+True | interpreter | Input: (\x.x * x) 2 * 3 | Expected: 12.0 | Output: 12.0
+True | interpreter | Input: (\x.x * x) (-2) * (-3) | Expected: -12.0 | Output: -12.0
+True | interpreter | Input: ((\x.x * x) (-2)) * (-3) | Expected: -12.0 | Output: -12.0
+True | interpreter | Input: (\x.x) (---2) | Expected: -2.0 | Output: -2.0
+True | interpreter | Input: if 0 then 2 else 1 | Expected: 1.0 | Output: 1.0
+True | interpreter | Input: if 1 then 2 else 2 | Expected: 2.0 | Output: 2.0
+True | interpreter | Input: if 0 then 2 else if 1 then 3 else 4 | Expected: 3.0 | Output: 3.0
+True | interpreter | Input: if 0 then 2 else if 0 then 3 else 4 | Expected: 4.0 | Output: 4.0
+True | interpreter | Input: if 0 == 0 then 5 else 6 | Expected: 5.0 | Output: 5.0
+True | interpreter | Input: if 0 <= 1 then 6 else 7 | Expected: 6.0 | Output: 6.0
+True | interpreter | Input: if 1 <= 0 then 6 else 7 | Expected: 7.0 | Output: 7.0
+True | interpreter | Input: let x = 1 in if x == 1 then 8 else 9 | Expected: 8.0 | Output: 8.0
+True | interpreter | Input: let x = 0 in if x == 1 then 8 else 9 | Expected: 9.0 | Output: 9.0
+True | interpreter | Input: let f = \x.x in f 10 | Expected: 10.0 | Output: 10.0
+True | interpreter | Input: let f = \x.x+1 in f 10 | Expected: 11.0 | Output: 11.0
+True | interpreter | Input: let f = \x.x*6 in let g = \x.x+1 in f (g 1) | Expected: 12.0 | Output: 12.0
+True | interpreter | Input: let f = \x.x*6 in let g = \x.x+1 in g (f 2) | Expected: 13.0 | Output: 13.0
+True | interpreter | Input: let f = \x.x*6 in let f = \x.x+1 in f (f 2) + 10 | Expected: 14.0 | Output: 14.0
+True | interpreter | Input: letrec f = \n. if n==0 then 1 else n*f(n-1) in f 4 | Expected: 24.0 | Output: 24.0
+True | interpreter | Input: letrec f = \n. if n==0 then 0 else 1 + 2*(n-1) + f(n-1) in f 6 | Expected: 36.0 | Output: 36.0
