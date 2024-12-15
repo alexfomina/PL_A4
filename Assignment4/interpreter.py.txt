@@ -26,7 +26,7 @@ True | interpreter | Input: let f = \x.x*6 in let g = \x.x+1 in g (f 2) | Expect
 True | interpreter | Input: let f = \x.x*6 in let f = \x.x+1 in f (f 2) + 10 | Expected: 14.0 | Output: 14.0
 True | interpreter | Input: letrec f = \n. if n==0 then 1 else n*f(n-1) in f 4 | Expected: 24.0 | Output: 24.0
 True | interpreter | Input: letrec f = \n. if n==0 then 0 else 1 + 2*(n-1) + f(n-1) in f 6 | Expected: 36.0 | Output: 36.0
-False | interpreter | Input: 1 ;; 2 ;; 3 | Expected: 1.0 ;; 2.0 ;; 3.0 | Output: (1.0 ;; (2.0 ;; 3.0))
+True | interpreter | Input: 1 ;; 2 ;; 3 | Expected: 1.0 ;; 2.0 ;; 3.0 | Output: 1.0 ;; 2.0 ;; 3.0
 True | interpreter | Input: # | Expected: # | Output: #
 True | interpreter | Input: 1:# | Expected: [1.0] | Output: [1.0]
 True | interpreter | Input: 1:2:# | Expected: [1.0, 2.0] | Output: [1.0, 2.0]

@@ -280,14 +280,18 @@ def evaluate(tree):
     elif tree[0] == 'eq':  # Equality operator
         left = evaluate(tree[1])
         right = evaluate(tree[2])
-        
+
         # Handle list comparison
         if isinstance(left, tuple) and left[0] == 'cons' and isinstance(right, tuple) and right[0] == 'cons':
-            # Compare the head and recursively compare the tail
-            return 1.0 if left[1] == right[1] and evaluate(('eq', left[2], right[2])) == 1.0 else 0.0
+            return 1.0 if evaluate(('eq', left[1], right[1])) == 1.0 and evaluate(('eq', left[2], right[2])) == 1.0 else 0.0
 
-        # Handle equality for basic types (e.g., numbers)
+        # Check if both are empty lists
+        if left == ('nil',) and right == ('nil',):
+            return 1.0
+
+        # Handle equality for basic types
         return 1.0 if left == right else 0.0
+
 
     
     # elif tree[0] == 'prog':
@@ -305,11 +309,19 @@ def evaluate(tree):
             raise TypeError(f"Cannot take head of non-list: {lst}")
         return evaluate(lst[1])
 
+    # elif tree[0] == 'tl':
+    #     lst = evaluate(tree[1])
+    #     if not isinstance(lst, tuple) or lst[0] != 'cons':
+    #         raise TypeError(f"Cannot take tail of non-list: {lst}")
+    #     return evaluate(lst[2])
     elif tree[0] == 'tl':
         lst = evaluate(tree[1])
-        if not isinstance(lst, tuple) or lst[0] != 'cons':
+        if lst == ('nil',):
+            raise ValueError("Cannot take tail of an empty list")
+        if lst[0] != 'cons':
             raise TypeError(f"Cannot take tail of non-list: {lst}")
-        return evaluate(lst[2])
+        return lst[2]  # Return the tail as-is (can be 'nil' or 'cons')
+
 
     elif tree[0] == 'nil':
         return ('nil',)
@@ -448,7 +460,7 @@ def linearize(ast):
     elif ast[0] == 'eq':
         return "(" + linearize(ast[1]) + " == " + linearize(ast[2]) + ")"
     elif ast[0] == 'prog':
-        return "(" + linearize(ast[1]) + " ;; " + linearize(ast[2]) + ")"
+        return linearize(ast[1]) + " ;; " + linearize(ast[2])
     # elif ast[0] == 'hd':
     #     return "(hd " + linearize(ast[1]) + ")"
     # elif ast[0] == 'tl':
