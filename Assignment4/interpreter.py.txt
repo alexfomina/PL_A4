@@ -1,5 +1,5 @@
 True | interpreter | Input: \x.(\y.y)x | Expected: (\x.((\y.y) x)) | Output: (\x.((\y.y) x))
-True | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: (a ((\x.x) b))
+False | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: (a b)
 True | interpreter | Input: (\x.x) (1--2) | Expected: 3.0 | Output: 3.0
 True | interpreter | Input: (\x.x) (1---2) | Expected: -1.0 | Output: -1.0
 True | interpreter | Input: (\x.x + 1) 5 | Expected: 6.0 | Output: 6.0
@@ -26,13 +26,160 @@ True | interpreter | Input: let f = \x.x*6 in let g = \x.x+1 in g (f 2) | Expect
 True | interpreter | Input: let f = \x.x*6 in let f = \x.x+1 in f (f 2) + 10 | Expected: 14.0 | Output: 14.0
 True | interpreter | Input: letrec f = \n. if n==0 then 1 else n*f(n-1) in f 4 | Expected: 24.0 | Output: 24.0
 True | interpreter | Input: letrec f = \n. if n==0 then 0 else 1 + 2*(n-1) + f(n-1) in f 6 | Expected: 36.0 | Output: 36.0
-True | interpreter | Input: 1 ;; 2 ;; 3 | Expected: 1.0 ;; 2.0 ;; 3.0 | Output: 1.0 ;; 2.0 ;; 3.0
+True | interpreter | Input: 1 | Expected: 1.0 | Output: 1.0
+True | interpreter | Input: (if 1 == 1 then \x.x+1 else \x.x+2) 5 + 10 | Expected: 16.0 | Output: 16.0
+True | interpreter | Input: if 1 == 1 then 1 else 2 + 1 | Expected: 1.0 | Output: 1.0
+True | interpreter | Input: 1 ;; 2 | Expected: 1.0 ;; 2.0 | Output: 1.0 ;; 2.0
+False | interpreter | Input: 1 ;; 2 ;; 3 | Expected: 1.0 ;; 2.0 ;; 3.0 | Output: 1.0 ;; 2.0
+False | interpreter | Input: 1+1 ;; (\x.x)a ;; (\x.x+x)2 | Expected: 2.0 ;; a ;; 4.0 | Output: 
+Error: Traceback (most recent call last):
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 600, in <module>
+    main()
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 596, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 10, in interpret
+    result_ast = evaluate(ast)
+                 ^^^^^^^^^^^^^
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 183, in evaluate
+    return evaluate(tree[1]) + evaluate(tree[2])
+           ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for +: 'float' and 'tuple'
+False | interpreter | Input: 1:2 ;; 1:2:# | Expected: (1.0 : 2.0) ;; (1.0 : (2.0 : #)) | Output: (1.0 : 2.0 ;; (1.0 : (2.0 : #)))
+True | interpreter | Input: (1) | Expected: 1.0 | Output: 1.0
 True | interpreter | Input: # | Expected: # | Output: #
-True | interpreter | Input: 1:# | Expected: [1.0] | Output: [1.0]
-True | interpreter | Input: 1:2:# | Expected: [1.0, 2.0] | Output: [1.0, 2.0]
+True | interpreter | Input: 1:2:3:# | Expected: (1.0 : (2.0 : (3.0 : #))) | Output: (1.0 : (2.0 : (3.0 : #)))
+False | interpreter | Input: (\x.x) # | Expected: # | Output: 
+Error: Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/lexer.py", line 665, in lex
+    yield lexer.next_token(lexer_state, parser_state)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/lexer.py", line 598, in next_token
+    raise UnexpectedCharacters(lex_state.text, line_ctr.char_pos, line_ctr.line, line_ctr.column,
+lark.exceptions.UnexpectedCharacters: No terminal matches '#' in the current parser context, at line 1 col 8
+
+(\x.x) #
+       ^
+Expected one of: 
+	* COLON
+	* PLUS
+	* ";;"
+	* LPAR
+	* "=="
+	* NUMBER
+	* RPAR
+	* STAR
+	* NAME
+	* MINUS
+	* BACKSLASH
+	* CIRCUMFLEX
+	* "<="
+
+Previous tokens: Token('RPAR', ')')
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 600, in <module>
+    main()
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 596, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 8, in interpret
+    cst = parser.parse(source_code)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/lark.py", line 655, in parse
+    return self.parser.parse(text, start=start, on_error=on_error)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parser_frontends.py", line 104, in parse
+    return self.parser.parse(stream, chosen_start, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 42, in parse
+    return self.parser.parse(lexer, start)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 88, in parse
+    return self.parse_from_state(parser_state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 111, in parse_from_state
+    raise e
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 100, in parse_from_state
+    for token in state.lexer.lex(state):
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/lexer.py", line 674, in lex
+    raise UnexpectedToken(token, e.allowed, state=parser_state, token_history=[last_token], terminals_by_name=self.root_lexer.terminals_by_name)
+lark.exceptions.UnexpectedToken: Unexpected token Token('HASH', '#') at line 1, column 8.
+Expected one of: 
+	* COLON
+	* NAME
+	* MINUS
+	* PLUS
+	* ";;"
+	* LPAR
+	* CIRCUMFLEX
+	* BACKSLASH
+	* "=="
+	* NUMBER
+	* $END
+	* "<="
+	* STAR
+Previous tokens: [Token('RPAR', ')')]
+False | interpreter | Input: (\x.\y.x) 1:# a | Expected: (1.0 : #) | Output: 
+Error: Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser_state.py", line 77, in feed_token
+    action, arg = states[state][token.type]
+                  ~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'NAME'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 600, in <module>
+    main()
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 596, in main
+    result = interpret(expression)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 8, in interpret
+    cst = parser.parse(source_code)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/lark.py", line 655, in parse
+    return self.parser.parse(text, start=start, on_error=on_error)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parser_frontends.py", line 104, in parse
+    return self.parser.parse(stream, chosen_start, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 42, in parse
+    return self.parser.parse(lexer, start)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 88, in parse
+    return self.parse_from_state(parser_state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 111, in parse_from_state
+    raise e
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser.py", line 102, in parse_from_state
+    state.feed_token(token)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/lark/parsers/lalr_parser_state.py", line 80, in feed_token
+    raise UnexpectedToken(token, expected, state=self, interactive_parser=None)
+lark.exceptions.UnexpectedToken: Unexpected token Token('NAME', 'a') at line 1, column 15.
+Expected one of: 
+	* __ANON_1
+	* $END
+	* PLUS
+	* COLON
+	* MINUS
+	* __ANON_0
+	* CIRCUMFLEX
+	* __ANON_2
+True | interpreter | Input: (\x.\y.y) a 1:# | Expected: (1.0 : #) | Output: (1.0 : #)
+True | interpreter | Input: let f = \x.x+1 in (f 1) : (f 2) : (f 3) : # | Expected: (2.0 : (3.0 : (4.0 : #))) | Output: (2.0 : (3.0 : (4.0 : #)))
+False | interpreter | Input: 1:2 == 1:2 | Expected: 1.0 | Output: (1.0 : 0.0)
+False | interpreter | Input: 1:2 == 1:3 | Expected: 0.0 | Output: (1.0 : 0.0)
+False | interpreter | Input: 1:2:# == 1:2:# | Expected: 1.0 | Output: (1.0 : (2.0 : 0.0))
+False | interpreter | Input: (1-2) : (2+2) : # == (-1):4:# | Expected: 1.0 | Output: (-1.0 : (4.0 : 0.0))
+True | interpreter | Input: hd a | Expected: (hd a) | Output: (hd a)
+True | interpreter | Input: hd (1:2:#) | Expected: 1.0 | Output: 1.0
 True | interpreter | Input: hd 1:2:# | Expected: 1.0 | Output: 1.0
-True | interpreter | Input: tl 1:2:# | Expected: [2.0] | Output: [2.0]
-True | interpreter | Input: hd (1:#) | Expected: 1.0 | Output: 1.0
-False | interpreter | Input: tl (1:#) | Expected: [] | Output: #
-False | interpreter | Input: 1:2:# == 1:2:# | Expected: 1.0 | Output: [1.0] : [2.0] : 0.0
-False | interpreter | Input: 1:2:# == 1:3:# | Expected: 0.0 | Output: [1.0] : [2.0] : 0.0
+True | interpreter | Input: tl a | Expected: (tl a) | Output: (tl a)
+True | interpreter | Input: tl (1:2:#) | Expected: (2.0 : #) | Output: (2.0 : #)
+True | interpreter | Input: tl 1:2:# | Expected: (2.0 : #) | Output: (2.0 : #)
+True | interpreter | Input: letrec map = \f. \xs. if xs==# then # else (f (hd xs)) : (map f (tl xs)) in (map (\x.x+1) (1:2:3:#)) | Expected: (2.0 : (3.0 : (4.0 : #))) | Output: (2.0 : (3.0 : (4.0 : #)))

@@ -138,17 +138,34 @@ def evaluate(tree):
         return tree
 
     # app
+    # if tree[0] == 'app':  # Application
+    #     func = evaluate(tree[1])
+    #     arg = tree[2]  # Do not evaluate the argument yet
+        
+    #     if isinstance(func, tuple) and func[0] == 'lam':  # If function is a lambda
+    #         param = func[1]
+    #         body = func[2]
+    #         substituted = substitute(body, param, arg)  # Substitute without evaluating the argument
+    #         return evaluate(substituted)  # Continue evaluating the resulting expression
+    #     else:
+    #         return ('app', func, arg)  # Return partially reduced application
     if tree[0] == 'app':  # Application
-        func = evaluate(tree[1])
-        arg = tree[2]  # Do not evaluate the argument yet
+        func = evaluate(tree[1])  # Evaluate the function part
+        arg = tree[2]  # Argument is not evaluated yet
         
         if isinstance(func, tuple) and func[0] == 'lam':  # If function is a lambda
             param = func[1]
             body = func[2]
-            substituted = substitute(body, param, arg)  # Substitute without evaluating the argument
-            return evaluate(substituted)  # Continue evaluating the resulting expression
+            # Substitute the argument into the lambda body
+            substituted = substitute(body, param, evaluate(arg))
+            return evaluate(substituted)  # Evaluate the resulting expression
+        elif isinstance(func, tuple) and func[0] == 'app':  
+            # Handle chained applications (e.g., (f x) y)
+            #return evaluate(('app', evaluate(('app', func[1], func[2])), arg))
+            return evaluate(('app', func, arg))
         else:
             return ('app', func, arg)  # Return partially reduced application
+
     
     # lambda 
     elif tree[0] == 'lam':  
@@ -277,53 +294,116 @@ def evaluate(tree):
     #     #print(" -> Equality comparison.")
     #     _, left, right = tree
     #     return 1 if evaluate(left) == evaluate(right) else 0
-    elif tree[0] == 'eq':  # Equality operator
+    # elif tree[0] == 'eq':
+    #     left = evaluate(tree[1])
+    #     right = evaluate(tree[2])
+
+    #     # Handle list comparison
+    #     if left == ('nil',) and right == ('nil',):
+    #         return 1.0
+    #     if isinstance(left, tuple) and left[0] == 'cons' and isinstance(right, tuple) and right[0] == 'cons':
+    #         return 1.0 if evaluate(('eq', left[1], right[1])) == 1.0 and evaluate(('eq', left[2], right[2])) == 1.0 else 0.0
+
+    #     return 1.0 if left == right else 0.0
+    elif tree[0] == 'eq':
         left = evaluate(tree[1])
         right = evaluate(tree[2])
 
-        # Handle list comparison
-        if isinstance(left, tuple) and left[0] == 'cons' and isinstance(right, tuple) and right[0] == 'cons':
-            return 1.0 if evaluate(('eq', left[1], right[1])) == 1.0 and evaluate(('eq', left[2], right[2])) == 1.0 else 0.0
+        # Debugging: Print evaluated results
+        #print(f"Comparing equality:\n  Left: {left}\n  Right: {right}")
 
-        # Check if both are empty lists
+        # Handle empty list comparison
         if left == ('nil',) and right == ('nil',):
             return 1.0
 
-        # Handle equality for basic types
+        # Handle non-empty lists comparison
+        if isinstance(left, tuple) and left[0] == 'cons' and isinstance(right, tuple) and right[0] == 'cons':
+            # Compare head and tail recursively
+            head_eq = evaluate(('eq', left[1], right[1]))
+            tail_eq = evaluate(('eq', left[2], right[2]))
+            #print(f"  Head comparison: {head_eq}, Tail comparison: {tail_eq}")
+            return 1.0 if head_eq == 1.0 and tail_eq == 1.0 else 0.0
+
+        # Compare other types (numbers, variables, etc.)
+        # result = 1.0 if left == right else 0.0
+        # #print(f"  Result: {result}")
+        # return result
         return 1.0 if left == right else 0.0
+
+
+    # elif tree[0] == 'eq':  # Equality operator
+    #     left = evaluate(tree[1])
+    #     right = evaluate(tree[2])
+
+    #     # Handle list comparison
+    #     if isinstance(left, tuple) and left[0] == 'cons' and isinstance(right, tuple) and right[0] == 'cons':
+    #         return 1.0 if evaluate(('eq', left[1], right[1])) == 1.0 and evaluate(('eq', left[2], right[2])) == 1.0 else 0.0
+
+    #     # Check if both are empty lists
+    #     if left == ('nil',) and right == ('nil',):
+    #         return 1.0
+
+    #     # Handle equality for basic types
+    #     return 1.0 if left == right else 0.0
 
 
     
     # elif tree[0] == 'prog':
     #     evaluate(tree[1])
     #     return evaluate(tree[2])
+    # elif tree[0] == 'prog':
+    #     left = evaluate(tree[1])
+    #     right = evaluate(tree[2])
+    #     return ('prog', left, right)
     elif tree[0] == 'prog':
         left = evaluate(tree[1])
         right = evaluate(tree[2])
+        if isinstance(right, tuple) and right[0] == 'prog':
+            return ('prog', left, right[1])
         return ('prog', left, right)
+        #return ('prog', left, right) if isinstance(right, tuple) and right[0] == 'prog' else (left, right)
 
 
+
+    # elif tree[0] == 'hd':
+    #     lst = evaluate(tree[1])
+    #     if not isinstance(lst, tuple) or lst[0] != 'cons':
+    #         raise TypeError(f"Cannot take head of non-list: {lst}")
+    #     return evaluate(lst[1])
     elif tree[0] == 'hd':
         lst = evaluate(tree[1])
-        if not isinstance(lst, tuple) or lst[0] != 'cons':
-            raise TypeError(f"Cannot take head of non-list: {lst}")
+        if lst == ('nil',):
+            raise ValueError("Cannot take head of an empty list")
+        if lst[0] != 'cons':
+            return ('hd', lst)  # Return `hd a` as-is if it's a variable
         return evaluate(lst[1])
+
+    elif tree[0] == 'tl':
+        lst = evaluate(tree[1])
+        if lst == ('nil',):
+            raise ValueError("Cannot take tail of an empty list")
+        if lst[0] != 'cons':
+            return ('tl', lst)  # Return `tl a` as-is if it's a variable
+        return lst[2]
+
 
     # elif tree[0] == 'tl':
     #     lst = evaluate(tree[1])
     #     if not isinstance(lst, tuple) or lst[0] != 'cons':
     #         raise TypeError(f"Cannot take tail of non-list: {lst}")
     #     return evaluate(lst[2])
-    elif tree[0] == 'tl':
-        lst = evaluate(tree[1])
-        if lst == ('nil',):
-            raise ValueError("Cannot take tail of an empty list")
-        if lst[0] != 'cons':
-            raise TypeError(f"Cannot take tail of non-list: {lst}")
-        return lst[2]  # Return the tail as-is (can be 'nil' or 'cons')
+    # elif tree[0] == 'tl':
+    #     lst = evaluate(tree[1])
+    #     if lst == ('nil',):
+    #         raise ValueError("Cannot take tail of an empty list")
+    #     if lst[0] != 'cons':
+    #         raise TypeError(f"Cannot take tail of non-list: {lst}")
+    #     return lst[2]  # Return the tail as-is (can be 'nil' or 'cons')
 
 
     elif tree[0] == 'nil':
+        return ('nil',)
+    elif tree[0] == 'var' and tree[1] == '#':
         return ('nil',)
 
     elif tree[0] == 'cons':
@@ -459,8 +539,8 @@ def linearize(ast):
         return "(" + linearize(ast[1]) + " <= " + linearize(ast[2]) + ")"
     elif ast[0] == 'eq':
         return "(" + linearize(ast[1]) + " == " + linearize(ast[2]) + ")"
-    elif ast[0] == 'prog':
-        return linearize(ast[1]) + " ;; " + linearize(ast[2])
+    # elif ast[0] == 'prog':
+    #     return linearize(ast[1]) + " ;; " + linearize(ast[2])
     # elif ast[0] == 'hd':
     #     return "(hd " + linearize(ast[1]) + ")"
     # elif ast[0] == 'tl':
@@ -471,16 +551,25 @@ def linearize(ast):
         return f"(tl {linearize(ast[1])})"
     elif ast[0] == 'nil':
         return "#"
+    # elif ast[0] == 'cons':
+    #     head = linearize(ast[1])
+    #     tail = linearize(ast[2])
+    #     if tail == "#":
+    #         return f"[{head}]"
+    #     elif tail.startswith("[") and tail.endswith("]"):
+    #         return f"[{head}, {tail[1:-1]}]"
+    #     else:
+    #         return f"[{head}] : {tail}"
     elif ast[0] == 'cons':
         head = linearize(ast[1])
         tail = linearize(ast[2])
         if tail == "#":
-            return f"[{head}]"
-        elif tail.startswith("[") and tail.endswith("]"):
-            return f"[{head}, {tail[1:-1]}]"
-        else:
-            return f"[{head}] : {tail}"
-
+            return f"({head} : #)"
+        return f"({head} : {tail})"
+    elif ast[0] == 'prog':
+        left = linearize(ast[1])
+        right = linearize(ast[2])
+        return f"{left} ;; {right}"
     # elif ast[0] == 'nil':
     #     return "#"
     # elif ast[0] == 'cons':
