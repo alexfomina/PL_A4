@@ -94,6 +94,31 @@ def test_substitute():
     print(f"SUBST {Fore.BLUE}if x then y else z [x/5]{Style.RESET_ALL} == ('if', ('num', 5), ('var', 'y'), ('var', 'z'))")
     
     print(f"\n{Fore.GREEN}substitute(): all tests passed.{Fore.RESET}")
+    
+def test_sequencing():
+    assert interpret("1 ;; 2 ;; 3") == "1.0 ;; 2.0 ;; 3.0", "Failed: Sequential composition"
+    assert interpret("1+1 ;; 2+2 ;; 3+3") == "2.0 ;; 4.0 ;; 6.0", "Failed: Sequential composition with operations"
+
+def test_list_constructors():
+    assert interpret("#") == "#", "Failed: Empty list"
+    assert interpret("1:#") == "[1.0]", "Failed: List with one element"
+    assert interpret("1:2:#") == "[1.0, 2.0]", "Failed: List with multiple elements"
+    assert interpret("1:(2:(3:#))") == "[1.0, 2.0, 3.0]", "Failed: Nested list"
+
+def test_list_destructors():
+    assert interpret("hd 1:2:3:#") == "1.0", "Failed: Head of list"
+    assert interpret("tl 1:2:3:#") == "[2.0, 3.0]", "Failed: Tail of list"
+    assert interpret("hd (1:#)") == "1.0", "Failed: Head with parentheses"
+    assert interpret("tl (1:#)") == "[]", "Failed: Tail with parentheses"
+    try:
+        interpret("hd #")
+        assert False, "Failed: Head of empty list should raise error"
+    except ValueError:
+        pass  # Expected behavior
+
+def test_list_comparison():
+    assert interpret("1:2:# == 1:2:#") == "1.0", "Failed: Equal lists"
+    assert interpret("1:2:# == 1:3:#") == "0.0", "Failed: Unequal lists"
 
 
 

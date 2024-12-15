@@ -6,13 +6,29 @@ import glob
 TIMEOUT = 0.2  # Timeout duration in seconds
 
 
+# def load_tests(file_path):
+#     """Load test cases from the given file."""
+#     tests = []
+#     with open(file_path, 'r') as file:
+#         for line in file:
+#             name, input, expected_output = line.strip().split(', ')
+#             tests.append((name, input, expected_output))
+#     return tests
 def load_tests(file_path):
     """Load test cases from the given file."""
     tests = []
     with open(file_path, 'r') as file:
         for line in file:
-            name, input, expected_output = line.strip().split(', ')
-            tests.append((name, input, expected_output))
+            try:
+                # Split at the first two commas
+                parts = line.strip().split(', ', 2)
+                if len(parts) == 3:
+                    name, input, expected_output = parts
+                    tests.append((name, input, expected_output))
+                else:
+                    print(f"Skipping invalid line: {line.strip()}")
+            except ValueError:
+                print(f"Error processing line: {line.strip()}")
     return tests
 
 
