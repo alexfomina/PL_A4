@@ -74,6 +74,20 @@ class LambdaCalculusTransformer(Transformer):
     def eq(self, items): 
         return ('eq', items[0], items[1])
 
+    def prog(self, items):
+        return ('prog', items[0], items[1])
+
+    def hd(self, items):
+        return ('hd', items[0])
+
+    def tl(self, items):
+        return ('tl', items[0])
+
+    def nil(self, items):
+        return ('nil',)
+
+    def cons(self, items):
+        return ('cons', items[0], items[1])
 
 
 class NameGenerator:
@@ -119,29 +133,21 @@ def normalize_variables(tree, original_param=None):
 
 
 def evaluate(tree):
-    #print(f"in evaluate Evaluating: {linearize(tree)}")  # Log the tree in human-readable format
     
     if isinstance(tree, (float, int)):
         return tree
 
     # app
     if tree[0] == 'app':  # Application
-        #print(" -> Application detected.")
         func = evaluate(tree[1])
-        #print(f" -> Evaluated function: {linearize(func)}")
         arg = tree[2]  # Do not evaluate the argument yet
-        #print(f" -> Unevaluated argument: {linearize(arg)}")
         
         if isinstance(func, tuple) and func[0] == 'lam':  # If function is a lambda
-            #print(" -> Applying lambda.")
             param = func[1]
             body = func[2]
-            #print(f" -> Substituting {param} with {linearize(arg)} in {linearize(body)}")
             substituted = substitute(body, param, arg)  # Substitute without evaluating the argument
-            #print(f" -> Result after substitution: {linearize(substituted)}")
             return evaluate(substituted)  # Continue evaluating the resulting expression
         else:
-            #print(f" -> Resulting application: {linearize(('app', func, arg))}")
             return ('app', func, arg)  # Return partially reduced application
     
     # lambda 
@@ -171,8 +177,6 @@ def evaluate(tree):
     
     # multiplication
     elif tree[0] == 'times':  
-        #print(" -> Multiplication.")
-        # return evaluate(tree[1]) * evaluate(tree[2])
     
         left = evaluate(tree[1])
         right = evaluate(tree[2])
@@ -223,25 +227,7 @@ def evaluate(tree):
     # DON"T CHANGE
         # needs work, deep recursion happens with bigger equations
     elif tree[0] == 'letrec':  # Recursive let binding
-        #print(" -> Letrec binding.")
-        # _, name, value, body = tree
-
-        # # Construct fixed-point combinator
-        # fixed_point = ('fix', ('lam', name, value))
-        # #print(f" -> Fixed-point combinator: {linearize(fixed_point)}")
-
-        # # Evaluate the fixed-point combinator to ensure it’s valid
-        # evaluated_fixed_point = evaluate(fixed_point)
-        # #print(f" -> Evaluated fixed-point combinator: {linearize(evaluated_fixed_point)}")
-
-        # # Substitute the evaluated fixed-point combinator into the body
-        # substituted = substitute(body, name, evaluated_fixed_point)
-        # #print(f" -> Body after substitution: {linearize(substituted)}")
-
-        # # Evaluate the substituted body
-        # result = evaluate(substituted)
-        # #print(f" -> Result after evaluating letrec: {result}")
-
+       
         # return result
         name, value, body = tree[1], tree[2], tree[3]
         fixed_point = ('fix', ('lam', name, value))
@@ -249,25 +235,6 @@ def evaluate(tree):
         substituted_body = substitute(body, name, evaluated_fixed_point)
         #print(f"substituted_body: {linearize(substituted_body)}")
         return evaluate(substituted_body)
-
-    # fix-point combinator aka fix
-    # first fix - unsure if it works, second works better
-    # elif tree[0] == 'fix':  # Fixed-point combinator
-    #     print(" -> Fixed-point combinator.")
-    #     _, func = tree
-    #     func_evaluated = evaluate(func)
-    #     if func_evaluated[0] == 'lam':
-    #         param = func_evaluated[1]
-    #         body = func_evaluated[2]
-    #         print(f" -> Applying fix to: {linearize(func_evaluated)}")
-    #         substituted = substitute(body, param, tree)  # Substitute f with fix (f)
-    #         print(f" -> Substituted body before normalization: {linearize(substituted)}")
-    #         normalized_result = normalize_variables(evaluate(substituted))  # Normalize variables
-    #         print(f" -> Normalized result: {linearize(normalized_result)}")
-    #         return normalized_result
-    #     else:
-    #         raise ValueError("fix must be applied to a lambda function.")
-    
 
     # fixed-point combinator aka fix
     # DON'T CHANGE
@@ -311,10 +278,34 @@ def evaluate(tree):
         _, left, right = tree
         return 1 if evaluate(left) == evaluate(right) else 0
     
+    elif tree[0] == 'prog':
+        evaluate(tree[1])
+        return evaluate(tree[2])
+
+    elif tree[0] == 'hd':
+        lst = evaluate(tree[1])
+        if not isinstance(lst, tuple) or lst[0] != 'cons':
+            raise TypeError(f"Cannot take head of non-list: {lst}")
+        return evaluate(lst[1])
+
+    elif tree[0] == 'tl':
+        lst = evaluate(tree[1])
+        if not isinstance(lst, tuple) or lst[0] != 'cons':
+            raise TypeError(f"Cannot take tail of non-list: {lst}")
+        return evaluate(lst[2])
+
+    elif tree[0] == 'nil':
+        return ('nil',)
+
+    elif tree[0] == 'cons':
+        head = evaluate(tree[1])
+        tail = evaluate(tree[2])
+        return ('cons', head, tail)
+    
 
     else:
         print(f" -> Returning unprocessed tree: {linearize(tree)}")
-        # return tree
+        return tree
 
 
 
@@ -378,6 +369,21 @@ def substitute(tree, name, replacement):
             # return evaluate(substituted_body)
         elif tree[0] == 'fix':
             return ('fix', substitute(tree[1], name, replacement))
+        
+        elif tree[0] == 'prog':
+            return ('prog', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
+
+        elif tree[0] == 'hd':
+            return ('hd', substitute(tree[1], name, replacement))
+
+        elif tree[0] == 'tl':
+            return ('tl', substitute(tree[1], name, replacement))
+
+        elif tree[0] == 'nil':
+            return tree
+
+        elif tree[0] == 'cons':
+            return ('cons', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
 
     return tree
 
@@ -424,6 +430,16 @@ def linearize(ast):
         return "(" + linearize(ast[1]) + " <= " + linearize(ast[2]) + ")"
     elif ast[0] == 'eq':
         return "(" + linearize(ast[1]) + " == " + linearize(ast[2]) + ")"
+    elif ast[0] == 'prog':
+        return "(" + linearize(ast[1]) + " ;; " + linearize(ast[2]) + ")"
+    elif ast[0] == 'hd':
+        return "(hd " + linearize(ast[1]) + ")"
+    elif ast[0] == 'tl':
+        return "(tl " + linearize(ast[1]) + ")"
+    elif ast[0] == 'nil':
+        return "#"
+    elif ast[0] == 'cons':
+        return "(" + linearize(ast[1]) + " : " + linearize(ast[2]) + ")"
     
     else:
         return str(ast)
@@ -448,99 +464,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# BELOW IS THE OLD SUBSTITUTE FUNCTION
-# don't know if it works, but kept just in case - can be deleted if not needed/doesn't work
-    # check to make sure it doesn't work before deleteing 12/3/24
-
-# def substitute(tree, name, replacement):
-#     print(f"Substituting: Replace {name} with {linearize(replacement)} in {linearize(tree)}")
-    
-#     if isinstance(tree, (float, int)):
-#         return tree
-
-#     if isinstance(tree, tuple):
-#         if tree[0] == 'var':
-#             print(f" -> Substituting variable: Replace {tree[1]} with {linearize(replacement)} in {linearize(tree)}")
-#             if tree[1] == name:
-#                 print(f" -> Variable matched: {tree[1]} replaced with {linearize(replacement)}")
-#                 return replacement
-#             else:
-#                 print(f" -> Variable {tree[1]} does not match {name}, no substitution.")
-#                 return tree
-            
-#         elif tree[0] == 'lam':
-#             param, body = tree[1], tree[2]
-#             if param == name:
-#                 print(f" -> Skipping substitution inside lambda for bound variable {name}.")
-#                 return tree  # Skip substitution for the bound variable
-#             else:
-#                 print(f" -> Substituting in lambda body: Replace {name} with {linearize(replacement)} in {linearize(body)}")
-#                 return ('lam', param, substitute(body, name, replacement))
-        
-
-
-#         elif tree[0] == 'app':
-#             print(f" -> Substituting in application: {linearize(tree)}")
-#             return ('app', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
-#         # Handle other cases (arithmetic, control flow) as before, logging substitutions
-#         elif tree[0] in {'plus', 'minus', 'times', 'power', 'neg', 'log'}:
-#             left = substitute(tree[1], name, replacement)
-#             right = substitute(tree[2], name, replacement)
-#             return (tree[0], left, right)
-#         elif tree[0] == 'let':
-#             if tree[1] == name:
-#                 print(f" -> Skipping substitution inside let for {name}.")
-#                 return tree
-#             else:
-#                 fresh_name = name_generator.generate()
-#                 print(f" -> Renaming variable {tree[1]} to avoid capture: {fresh_name}")
-#                 renamed_value = substitute(tree[2], tree[1], ('var', fresh_name))
-#                 renamed_body = substitute(tree[3], name, replacement)
-#                 return ('let', fresh_name, renamed_value, renamed_body)
-            
-#         elif tree[0] == 'letrec':
-#             if tree[1] == name:
-#                 print(f" -> Skipping substitution inside letrec for {name}.")
-#                 return tree
-#             else:
-#                 fresh_name = name_generator.generate()
-#                 print(f" -> Renaming variable {tree[1]} to avoid capture: {fresh_name}")
-#                 renamed_value = substitute(tree[2], tree[1], ('var', fresh_name))
-#                 renamed_body = substitute(tree[3], name, replacement)
-#                 return ('letrec', fresh_name, renamed_value, renamed_body)
-
-#         elif tree[0] == 'fix':
-#             print(f" -> Substituting in fix: {linearize(tree)}")
-#             return ('fix', substitute(tree[1], name, replacement))
-        
-#         elif tree[0] == 'if':
-#             # cond = substitute(tree[1], name, replacement)
-#             # then_ = substitute(tree[2], name, replacement)
-#             # else_ = substitute(tree[3], name, replacement)
-#             # return ('if', cond, then_, else_)
-            
-#             print(f" -> Conditional (if-then-else): {tree}")
-#             if len(tree) != 4:
-#                 raise ValueError(f"Malformed if expression: {tree}")
-#             _, condition, then_branch, else_branch = tree
-#             condition_value = evaluate(condition)
-#             if condition_value != 0:  # Treat non-zero as "true"
-#                 print(f" -> Condition is true; evaluating then-branch: {then_branch}")
-#                 return evaluate(then_branch)
-#             else:
-#                 print(f" -> Condition is false; evaluating else-branch: {else_branch}")
-#                 return evaluate(else_branch)
-
-#         elif tree[0] == 'leq':
-#             left = substitute(tree[1], name, replacement)
-#             right = substitute(tree[2], name, replacement)
-#             return ('leq', left, right)
-#         elif tree[0] == 'eq':
-#             left = substitute(tree[1], name, replacement)
-#             right = substitute(tree[2], name, replacement)
-#             return ('eq', left, right)
-        
-        
-#     return tree

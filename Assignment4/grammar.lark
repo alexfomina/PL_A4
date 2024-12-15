@@ -10,6 +10,11 @@
      | "let" NAME "=" exp "in" exp -> let
      | "letrec" NAME "=" exp "in" exp -> letrec
      | "fix" exp -> fix
+     | exp ";;" exp -> prog
+     | "hd" exp -> hd
+     | "tl" exp -> tl
+     | "#" -> nil
+     | exp ":" exp -> cons
      | exp1
 
 ?exp1: exp1 "*" exp2 -> times
@@ -33,4 +38,4 @@ NAME: /[a-z_][a-zA-Z0-9_]*/
 %ignore WS
 
 %ignore /\/\/[^\n]*/  
-%ignore /\/\*[\s\S]*?\*\//  
+%ignore /\/\*[\s\S]*?\*\//
