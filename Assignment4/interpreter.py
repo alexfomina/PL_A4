@@ -388,29 +388,13 @@ def substitute(tree, name, replacement):
             return ('fix', substitute(tree[1], name, replacement))
         
         elif tree[0] == 'prog':
-            left = evaluate(tree[1])
-            right = evaluate(tree[2])
-            return ('prog', left, right)
-            #return ('prog', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
+            return ('prog', substitute(tree[1], name, replacement), substitute(tree[2], name, replacement))
 
         elif tree[0] == 'hd':
             return ('hd', substitute(tree[1], name, replacement))
-        # elif tree[0] == 'hd':
-        #     lst = evaluate(tree[1])
-        #     if lst == ('nil',):
-        #         raise ValueError("Cannot take head of an empty list")
-        #     if lst[0] != 'cons':
-        #         raise TypeError(f"Cannot take head of non-list: {lst}")
-        #     return lst[1]
 
         elif tree[0] == 'tl':
             return ('tl', substitute(tree[1], name, replacement))
-            # lst = evaluate(tree[1])
-            # if lst == ('nil',):
-            #     raise ValueError("Cannot take tail of an empty list")
-            # if lst[0] != 'cons':
-            #     raise TypeError(f"Cannot take tail of non-list: {lst}")
-            # return lst[2]
 
         elif tree[0] == 'nil':
             return tree
@@ -474,11 +458,11 @@ def linearize(ast):
     elif ast[0] == 'tl':
         return f"(tl {linearize(ast[1])})"
     elif ast[0] == 'nil':
-        return "[]"
+        return "#"
     elif ast[0] == 'cons':
         head = linearize(ast[1])
         tail = linearize(ast[2])
-        if tail == "[]":
+        if tail == "#":
             return f"[{head}]"
         elif tail.startswith("[") and tail.endswith("]"):
             return f"[{head}, {tail[1:-1]}]"
