@@ -157,7 +157,7 @@ def evaluate(tree):
             param = func[1]
             body = func[2]
             # Substitute the argument into the lambda body
-            substituted = substitute(body, param, evaluate(arg))
+            substituted = substitute(body, param, arg)
             return evaluate(substituted)  # Evaluate the resulting expression
         elif isinstance(func, tuple) and func[0] == 'app':  
             # Handle chained applications (e.g., (f x) y)
@@ -324,11 +324,16 @@ def evaluate(tree):
             #print(f"  Head comparison: {head_eq}, Tail comparison: {tail_eq}")
             return 1.0 if head_eq == 1.0 and tail_eq == 1.0 else 0.0
 
+        elif isinstance(left, (int, float)) and isinstance(right, (int, float)):
+            return 1.0 if left == right else 0.0
+        
+        if left ==right:
+            return 1.0
         # Compare other types (numbers, variables, etc.)
         # result = 1.0 if left == right else 0.0
         # #print(f"  Result: {result}")
         # return result
-        return 1.0 if left == right else 0.0
+        return 0.0
 
 
     # elif tree[0] == 'eq':  # Equality operator
@@ -359,7 +364,7 @@ def evaluate(tree):
         left = evaluate(tree[1])
         right = evaluate(tree[2])
         if isinstance(right, tuple) and right[0] == 'prog':
-            return ('prog', left, right[1])
+            return ('prog', left, evaluate(right))
         return ('prog', left, right)
         #return ('prog', left, right) if isinstance(right, tuple) and right[0] == 'prog' else (left, right)
 

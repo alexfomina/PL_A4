@@ -1,5 +1,5 @@
 True | interpreter | Input: \x.(\y.y)x | Expected: (\x.((\y.y) x)) | Output: (\x.((\y.y) x))
-False | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: (a b)
+True | interpreter | Input: (\x.a x) ((\x.x)b) | Expected: (a ((\x.x) b)) | Output: (a ((\x.x) b))
 True | interpreter | Input: (\x.x) (1--2) | Expected: 3.0 | Output: 3.0
 True | interpreter | Input: (\x.x) (1---2) | Expected: -1.0 | Output: -1.0
 True | interpreter | Input: (\x.x + 1) 5 | Expected: 6.0 | Output: 6.0
@@ -30,12 +30,12 @@ True | interpreter | Input: 1 | Expected: 1.0 | Output: 1.0
 True | interpreter | Input: (if 1 == 1 then \x.x+1 else \x.x+2) 5 + 10 | Expected: 16.0 | Output: 16.0
 True | interpreter | Input: if 1 == 1 then 1 else 2 + 1 | Expected: 1.0 | Output: 1.0
 True | interpreter | Input: 1 ;; 2 | Expected: 1.0 ;; 2.0 | Output: 1.0 ;; 2.0
-False | interpreter | Input: 1 ;; 2 ;; 3 | Expected: 1.0 ;; 2.0 ;; 3.0 | Output: 1.0 ;; 2.0
+True | interpreter | Input: 1 ;; 2 ;; 3 | Expected: 1.0 ;; 2.0 ;; 3.0 | Output: 1.0 ;; 2.0 ;; 3.0
 False | interpreter | Input: 1+1 ;; (\x.x)a ;; (\x.x+x)2 | Expected: 2.0 ;; a ;; 4.0 | Output: 
 Error: Traceback (most recent call last):
-  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 600, in <module>
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 605, in <module>
     main()
-  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 596, in main
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 601, in main
     result = interpret(expression)
              ^^^^^^^^^^^^^^^^^^^^^
   File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 10, in interpret
@@ -61,19 +61,19 @@ lark.exceptions.UnexpectedCharacters: No terminal matches '#' in the current par
 (\x.x) #
        ^
 Expected one of: 
-	* COLON
-	* PLUS
-	* ";;"
-	* LPAR
-	* "=="
-	* NUMBER
-	* RPAR
-	* STAR
-	* NAME
-	* MINUS
-	* BACKSLASH
-	* CIRCUMFLEX
 	* "<="
+	* MINUS
+	* NUMBER
+	* ";;"
+	* BACKSLASH
+	* STAR
+	* RPAR
+	* PLUS
+	* "=="
+	* LPAR
+	* CIRCUMFLEX
+	* COLON
+	* NAME
 
 Previous tokens: Token('RPAR', ')')
 
@@ -81,9 +81,9 @@ Previous tokens: Token('RPAR', ')')
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 600, in <module>
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 605, in <module>
     main()
-  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 596, in main
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 601, in main
     result = interpret(expression)
              ^^^^^^^^^^^^^^^^^^^^^
   File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 8, in interpret
@@ -110,19 +110,19 @@ Traceback (most recent call last):
     raise UnexpectedToken(token, e.allowed, state=parser_state, token_history=[last_token], terminals_by_name=self.root_lexer.terminals_by_name)
 lark.exceptions.UnexpectedToken: Unexpected token Token('HASH', '#') at line 1, column 8.
 Expected one of: 
-	* COLON
-	* NAME
-	* MINUS
 	* PLUS
-	* ";;"
-	* LPAR
-	* CIRCUMFLEX
-	* BACKSLASH
-	* "=="
-	* NUMBER
-	* $END
 	* "<="
+	* MINUS
+	* "=="
+	* LPAR
+	* NUMBER
+	* ";;"
+	* BACKSLASH
 	* STAR
+	* COLON
+	* CIRCUMFLEX
+	* NAME
+	* $END
 Previous tokens: [Token('RPAR', ')')]
 False | interpreter | Input: (\x.\y.x) 1:# a | Expected: (1.0 : #) | Output: 
 Error: Traceback (most recent call last):
@@ -134,9 +134,9 @@ KeyError: 'NAME'
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 600, in <module>
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 605, in <module>
     main()
-  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 596, in main
+  File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 601, in main
     result = interpret(expression)
              ^^^^^^^^^^^^^^^^^^^^^
   File "/Users/alexfomina/Desktop/PL_A4/Assignment4/interpreter.py", line 8, in interpret
@@ -162,14 +162,14 @@ Traceback (most recent call last):
     raise UnexpectedToken(token, expected, state=self, interactive_parser=None)
 lark.exceptions.UnexpectedToken: Unexpected token Token('NAME', 'a') at line 1, column 15.
 Expected one of: 
-	* __ANON_1
-	* $END
 	* PLUS
-	* COLON
-	* MINUS
+	* $END
 	* __ANON_0
-	* CIRCUMFLEX
 	* __ANON_2
+	* COLON
+	* __ANON_1
+	* MINUS
+	* CIRCUMFLEX
 True | interpreter | Input: (\x.\y.y) a 1:# | Expected: (1.0 : #) | Output: (1.0 : #)
 True | interpreter | Input: let f = \x.x+1 in (f 1) : (f 2) : (f 3) : # | Expected: (2.0 : (3.0 : (4.0 : #))) | Output: (2.0 : (3.0 : (4.0 : #)))
 False | interpreter | Input: 1:2 == 1:2 | Expected: 1.0 | Output: (1.0 : 0.0)
